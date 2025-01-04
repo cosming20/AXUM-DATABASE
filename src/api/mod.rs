@@ -1,7 +1,10 @@
 pub mod angajati;
-pub mod traits;
+pub mod banca;
+pub mod sucursala;
+
 pub use angajati::*;
-pub use traits::*;
+pub use banca::*;
+pub use sucursala::*;
 
 use serde::{Deserialize, Serialize};
 

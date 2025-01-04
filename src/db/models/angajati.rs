@@ -42,4 +42,11 @@ impl SqlAngajat {
 
         Ok(inserted_angajat)
     }
+
+pub fn get_all_angajati(conn: &mut MysqlConnection) -> Result<Vec<Self>, DieselError> {
+    let angajati_list = angajati::table
+        .load::<SqlAngajat>(conn)?; // Load all angajati from the database
+
+    Ok(angajati_list)
+}
 }

@@ -1,9 +1,4 @@
-use diesel::Connection;
 use leptos::*;
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
-use crate::app;
-use super::ClientError;
 use leptos::prelude::ServerFnError;
 use crate::db::models::*;
 
@@ -30,16 +25,25 @@ pub async fn create_angajati(
     }
 }
 
-// // #[server]
-// // pub async fn get_angajati() -> Result<Vec<models::SqlAngajat>, ServerFnError> {
-// //     use crate::api::traits::ssr::AppContext;
-// //     let ctx = AppContext::new()?;
-// //     let mut conn = ctx.db_pool.get().await.map_esrv()?;
+#[server]
+pub async fn get_angajati() -> Result<Vec<SqlAngajat>, ServerFnError> {
+    use crate::establish_connection;
+    use crate::db::models::SqlAngajat;
 
-// //     let angajati = models::SqlAngajat::get_all(&mut conn)
-// //         .await
-// //         .map_esrv()?;
+    let mut conn = establish_connection();
 
-// //     Ok(angajati)
-// // }
+    match SqlAngajat::get_all_angajati(&mut conn) {
+        Ok(angajati) => {
+            // Successfully retrieved angajati
+            println!("Angajati retrieved: {:?}", angajati);
+            Ok(angajati) // Return the retrieved angajati in the Ok variant
+        },
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error retrieving angajati: {:?}", e);
+            Err(ServerFnError::new(format!("Error retrieving angajati: {:?}", e))) // Return the error in the Err variant
+        }
+    }
+}
+
 

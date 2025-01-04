@@ -1,12 +1,15 @@
-use leptos::prelude::*;
+use leptos::{html::table, prelude::*};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
     StaticSegment,
 };
 use leptos::task::spawn_local;
-use log;
 use chrono::{DateTime, Utc};
+use crate::api::*;
+use thaw::*;
+use crate::db::*;
+use leptos::logging::log;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -32,6 +35,8 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
+        <ConfigProvider>
+        <ToasterProvider>
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
         <Stylesheet id="leptos" href="/pkg/{{project-name}}.css"/>
@@ -44,9 +49,12 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes fallback=|| "Page not found.".into_view()>
                     <Route path=StaticSegment("") view=HomePage/>
+                    <Route path=StaticSegment("/table") view=Table/>
                 </Routes>
             </main>
         </Router>
+        </ToasterProvider>
+        </ConfigProvider>
     }
 }
 
@@ -105,5 +113,153 @@ fn HomePage() -> impl IntoView {
     view! {
         <h1>"Welcome to Leptos!"</h1>
         <button on:click=on_click>"Click Me: " {count}</button>
+    }
+}
+
+#[derive(Clone)]
+pub enum TableState {
+    Hidden,
+    Angajati,
+    Banci,
+    Sucursale,
+}
+
+#[component]
+fn Table() -> impl IntoView {
+    let toaster = ToasterInjection::expect_context();
+
+    let on_select = move |key: String| {
+  leptos::logging::warn!("{}", key);
+  toaster.dispatch_toast(move || view! {
+        <Toast>
+            <ToastBody>
+                "key"
+            </ToastBody>
+        </Toast>
+  }, Default::default());
+};
+    let (table_state, set_table_state) = signal(TableState::Hidden);
+    let on_click_angajati = move |_| {
+        set_table_state(TableState::Angajati);
+        log!("aici");
+    };
+    let on_click_banci = move |_| {
+        set_table_state(TableState::Banci);
+        log!("aici");
+    };
+    let on_click_sucursale = move |_| {
+        set_table_state(TableState::Sucursale);
+        log!("aici");
+    };
+    let async_data = LocalResource::new(move || get_angajati());
+    view! {
+        <NavDrawer>
+        <NavCategory value="table">
+            <NavCategoryItem slot icon=icondata::AiTableOutlined>
+                "Table"
+            </NavCategoryItem>
+            <NavSubItem on:click=on_click_angajati value="target">
+                "Angajati"
+            </NavSubItem>
+            <NavSubItem on:click=on_click_banci value="above">
+                "Banci"
+            </NavSubItem>
+            <NavSubItem on:click=on_click_sucursale value="below">
+                "Sucursale"
+            </NavSubItem>
+        </NavCategory>
+        <NavCategory value="pie">
+            <NavCategoryItem slot icon=icondata::AiPieChartOutlined>
+                "Pie Chart"
+            </NavCategoryItem>
+            <NavSubItem value="pie-target">
+                "Pie Target"
+            </NavSubItem>
+            <NavSubItem value="pin-above">
+                "Pin Above"
+            </NavSubItem>
+            <NavSubItem value="pin-below">
+                "Pin Below"
+            </NavSubItem>
+        </NavCategory>
+        <NavItem
+            icon=icondata::AiGithubOutlined
+            value="github"
+            href="https://github.com/cosming20"
+            attr:target="_blank"
+        >
+            "Github"
+        </NavItem>
+        <NavItem icon=icondata::BiMicrosoftTeams value="teams">
+            "Gagea Cosmin"
+        </NavItem>
+    </NavDrawer>
+    
+}}
+#[component]
+pub fn NavComponent(table_state: Signal<TableState>) -> impl IntoView {
+    let (table_state, set_table_state) = signal(TableState::Hidden);
+    let on_click_angajati = move |_| {
+        set_table_state(TableState::Angajati);
+        log!("aici");
+    };
+    let on_click_banci = move |_| {
+        set_table_state(TableState::Banci);
+        log!("aici");
+    };
+    let on_click_sucursale = move |_| {
+        set_table_state(TableState::Sucursale);
+        log!("aici");
+    };
+
+    view! {
+        <NavDrawer>
+            <NavCategory value="table">
+                <NavCategoryItem slot icon=icondata::AiTableOutlined>
+                    "Table"
+                </NavCategoryItem>
+                <NavSubItem on:click=on_click_angajati value="target">
+                    "Angajati"
+                </NavSubItem>
+                <NavSubItem on:click=on_click_banci value="above">
+                    "Banci"
+                </NavSubItem>
+                <NavSubItem on:click=on_click_sucursale value="below">
+                    "Sucursale"
+                </NavSubItem>
+            </NavCategory>
+            <NavCategory value="pie">
+                <NavCategoryItem slot icon=icondata::AiPieChartOutlined>
+                    "Pie Chart"
+                </NavCategoryItem>
+                <NavSubItem value="pie-target">
+                    "Pie Target"
+                </NavSubItem>
+                <NavSubItem value="pin-above">
+                    "Pin Above"
+                </NavSubItem>
+                <NavSubItem value="pin-below">
+                    "Pin Below"
+                </NavSubItem>
+            </NavCategory>
+            <NavItem
+                icon=icondata::AiGithubOutlined
+                value="github"
+                href="https://github.com/cosming20"
+                attr:target="_blank"
+            >
+                "Github"
+            </NavItem>
+            <NavItem icon=icondata::BiMicrosoftTeams value="teams">
+                "Gagea Cosmin"
+            </NavItem>
+        </NavDrawer>
+    }
+}
+
+#[component]
+pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
+    view! {
+        
     }
 }
