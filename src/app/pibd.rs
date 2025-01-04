@@ -1,15 +1,15 @@
+use crate::api::*;
+use crate::db::*;
+use chrono::{DateTime, Utc};
+use leptos::logging::log;
+use leptos::task::spawn_local;
 use leptos::{html::table, prelude::*};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
     StaticSegment,
 };
-use leptos::task::spawn_local;
-use chrono::{DateTime, Utc};
-use crate::api::*;
 use thaw::*;
-use crate::db::*;
-use leptos::logging::log;
 use web_sys::MouseEvent;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -70,7 +70,7 @@ fn HomePage() -> impl IntoView {
     let telefon = RwSignal::new(String::from("0757422485"));
     let data_angajarii = RwSignal::new(Utc::now());
     let banca_id = RwSignal::new(1);
-    
+
     let on_click = move |_| {
         let nume_value = nume.get().clone();
         let prenume_value = prenume.get().clone();
@@ -127,48 +127,44 @@ pub enum TableState {
 
 #[component]
 fn MainPage() -> impl IntoView {
-
     let (table_state, set_table_state) = signal(TableState::Hidden);
     let on_click_angajati = move |_| {
         set_table_state(TableState::Angajati);
- 
     };
     let on_click_banci = move |_| {
         set_table_state(TableState::Banci);
-  
     };
     let on_click_sucursale = move |_| {
         set_table_state(TableState::Sucursale);
-       
     };
     let async_data = LocalResource::new(move || get_angajati());
     view! {
-        <Layout has_sider=true>
-        <LayoutSider attr:style="background-color: #0078ff99; padding: 20px;">
-            <NavComponent
-                    on_click_angajati=on_click_angajati
-                    on_click_banci=on_click_banci
-                    on_click_sucursale=on_click_sucursale
-            />
-        </LayoutSider>
-        <Layout>
-            <LayoutHeader attr:style="background-color: #0078ffaa; padding: 20px;">
-                "Header"
-            </LayoutHeader>
-            <Layout attr:style="background-color: #0078ff88; padding: 20px;">
-                <Tables table_state=table_state/>
+            <Layout has_sider=true>
+            <LayoutSider attr:style="background-color: #0078ff99; padding: 20px;">
+                <NavComponent
+                        on_click_angajati=on_click_angajati
+                        on_click_banci=on_click_banci
+                        on_click_sucursale=on_click_sucursale
+                />
+            </LayoutSider>
+            <Layout>
+                <LayoutHeader attr:style="background-color: #0078ffaa; padding: 20px;">
+                    "Header"
+                </LayoutHeader>
+                <Layout attr:style="background-color: #0078ff88; padding: 20px;">
+                    <Tables table_state=table_state/>
+                </Layout>
             </Layout>
         </Layout>
-    </Layout>
-    
-}}
+
+    }
+}
 #[component]
 pub fn NavComponent(
     #[prop()] on_click_angajati: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
     #[prop()] on_click_banci: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
     #[prop()] on_click_sucursale: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
 ) -> impl IntoView {
-
     view! {
         <NavDrawer>
             <NavCategory value="table">
@@ -216,10 +212,18 @@ pub fn NavComponent(
 
 #[component]
 pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
-    let async_angajati = LocalResource::new(move || get_angajati());
+    use crate::app::models::Angajat;
+    // let VecAngajat: Vec<Angajat> = Vec::new();
+    // let async_data = Resource::new(
+    //     move || count.get(),
+    //     // every time `count` changes, this will run
+    //     |count| get_angajati() 
+    // );
+    let once = OnceResource::new(get_angajati());
+    // let angajati_data = Resource::new(move || get_angajati());
     let async_banci = LocalResource::new(move || get_banci());
     let async_sucursale = LocalResource::new(move || get_sucursale());
-    // let angajati_data = async_angajati.read();
+     // Read the data from LocalResourc
     view! {
         <div>
             <Transition fallback=move || {
@@ -228,34 +232,168 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                 {move || {
                     match table_state.get() {
                         TableState::Angajati => {
-                            view! { 
-                                <div>
-                                    <p>"Aici va fi tabelul pentru Angajati."</p>
-                                </div>
+                            view! {
+                                <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHeaderCell>"Nume"</TableHeaderCell>
+                                        <TableHeaderCell>"Prenume"</TableHeaderCell>
+                                        <TableHeaderCell>"Telefon"</TableHeaderCell>
+                                        <TableHeaderCell>"Banca ID"</TableHeaderCell>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {
+                                    move || {
+                                        
+                                        let table_rows = move || {
+                                            match once.read().as_ref() {
+                                                Some(Ok(angajati)) => angajati.iter().map(|angajat| {
+                                                    view! {
+                                                        <TableRow>
+                                                            <TableCell>{angajat.nume.clone()}</TableCell>
+                                                            <TableCell>{angajat.prenume.clone()}</TableCell>
+                                                            <TableCell>{angajat.telefon.clone()}</TableCell>
+                                                            <TableCell>{angajat.banca_id}</TableCell>
+                                                        </TableRow>
+                                                    }
+                                                }).collect::<Vec<_>>(),
+                            
+                                                Some(Err(e)) => vec![view! {
+                                                    <TableRow>
+                                                        <TableCell >
+                                                            {format!("Error: {}", e)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                }],
+                            
+                                                None => vec![view! {
+                                                    <TableRow>
+                                                        <TableCell >
+                                                            "Loading..."
+                                                        </TableCell>
+                                                    </TableRow>
+                                                }],
+                                            }
+                                        };
+                                    }
+                                }
+                                </TableBody>
+                            </Table>
                             }
                         }
                         TableState::Banci => {
                             // Handle the case for Banci
-                            view! { 
-                                <div>
-                                    <p>"Aici va fi tabelul pentru Banci."</p>
-                                </div>
+                            view! {
+                                <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>"Tag"</TableHeaderCell>
+                <TableHeaderCell>"Count"</TableHeaderCell>
+                <TableHeaderCell>"Date"</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            <TableRow>
+                <TableCell>
+                    <TableCellLayout>
+                        "div"
+                    </TableCellLayout>
+                </TableCell>
+                <TableCell>
+                    <TableCellLayout>
+                        "2"
+                    </TableCellLayout>
+                </TableCell>
+                <TableCell>
+                    <TableCellLayout>
+                        "2023-10-08"
+                    </TableCellLayout>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>"span"</TableCell>
+                <TableCell>"2"</TableCell>
+                <TableCell>"2023-10-08"</TableCell>
+            </TableRow>
+        </TableBody>
+    </Table>
                             }
                         }
                         TableState::Sucursale => {
                             // Handle the case for Sucursale
-                            view! { 
-                                <div>
-                                    <p>"Aici va fi tabelul pentru Sucursale."</p>
-                                </div>
+                            view! {
+                                <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>"Tag"</TableHeaderCell>
+                <TableHeaderCell>"Count"</TableHeaderCell>
+                <TableHeaderCell>"Date"</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            <TableRow>
+                <TableCell>
+                    <TableCellLayout>
+                        "div"
+                    </TableCellLayout>
+                </TableCell>
+                <TableCell>
+                    <TableCellLayout>
+                        "2"
+                    </TableCellLayout>
+                </TableCell>
+                <TableCell>
+                    <TableCellLayout>
+                        "2023-10-08"
+                    </TableCellLayout>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>"span"</TableCell>
+                <TableCell>"2"</TableCell>
+                <TableCell>"2023-10-08"</TableCell>
+            </TableRow>
+        </TableBody>
+    </Table>
                             }
                         }
                         TableState::Hidden => {
                             // Handle the case for Hidden
-                            view! { 
-                                <div>
-                                    <p>"Selectați o opțiune pentru a vizualiza datele."</p>
-                                </div>
+                            view! {
+                                <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>"Tag"</TableHeaderCell>
+                <TableHeaderCell>"Count"</TableHeaderCell>
+                <TableHeaderCell>"Date"</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            <TableRow>
+                <TableCell>
+                    <TableCellLayout>
+                        "div"
+                    </TableCellLayout>
+                </TableCell>
+                <TableCell>
+                    <TableCellLayout>
+                        "2"
+                    </TableCellLayout>
+                </TableCell>
+                <TableCell>
+                    <TableCellLayout>
+                        "2023-10-08"
+                    </TableCellLayout>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell>"span"</TableCell>
+                <TableCell>"2"</TableCell>
+                <TableCell>"2023-10-08"</TableCell>
+            </TableRow>
+        </TableBody>
+    </Table>
                             }
                         }
                     }
@@ -264,4 +402,3 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
         </div>
     }
 }
-

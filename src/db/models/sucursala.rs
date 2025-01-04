@@ -1,9 +1,11 @@
-use diesel::{prelude::*, MysqlConnection};
-use serde::{Deserialize, Serialize};
 use crate::db::schema::*;
 use diesel::result::Error as DieselError;
+use diesel::{prelude::*, MysqlConnection};
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset,
+)]
 #[diesel(table_name = sucursala)]
 pub struct SqlSucursala {
     pub id: i32,
@@ -21,9 +23,9 @@ pub struct NewSucursala {
 impl SqlSucursala {
     // Create a new sucursala
     pub fn create_sucursala(
-        conn: &mut MysqlConnection,  // Accept MySQL connection here (synchronous)
-        nume: String, 
-        adresa: String
+        conn: &mut MysqlConnection, // Accept MySQL connection here (synchronous)
+        nume: String,
+        adresa: String,
     ) -> Result<Self, DieselError> {
         let new_sucursala = NewSucursala { nume, adresa };
 
@@ -40,8 +42,7 @@ impl SqlSucursala {
 
     // Fetch all sucursale
     pub fn get_all_sucursale(conn: &mut MysqlConnection) -> Result<Vec<Self>, DieselError> {
-        let sucursale_list = sucursala::table
-            .load::<SqlSucursala>(conn)?; // Load all sucursale from the database
+        let sucursale_list = sucursala::table.load::<SqlSucursala>(conn)?; // Load all sucursale from the database
 
         Ok(sucursale_list)
     }

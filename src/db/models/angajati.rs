@@ -1,10 +1,12 @@
-use diesel::{prelude::*, MysqlConnection};
-use serde::{Deserialize, Serialize};
+use crate::app::*;
 use crate::db::schema::*;
 use diesel::result::Error as DieselError;
-use crate::app::*;
+use diesel::{prelude::*, MysqlConnection};
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset,
+)]
 #[diesel(table_name = angajati)]
 pub struct SqlAngajat {
     pub id: i32,
@@ -25,28 +27,32 @@ struct NewAngajat {
 
 impl SqlAngajat {
     pub fn create_angajat(
-        conn: &mut MysqlConnection,  // Accept MySQL connection here (synchronous)
-        nume: String, 
-        prenume: String, 
-        telefon: String, 
-        banca_id: i32
+        conn: &mut MysqlConnection, // Accept MySQL connection here (synchronous)
+        nume: String,
+        prenume: String,
+        telefon: String,
+        banca_id: i32,
     ) -> Result<Self, DieselError> {
-        let new_user = NewAngajat { nume, prenume, telefon, banca_id };
-    
+        let new_user = NewAngajat {
+            nume,
+            prenume,
+            telefon,
+            banca_id,
+        };
+
         diesel::insert_into(angajati::table)
-        .values(&new_user)
-        .execute(conn)?;
+            .values(&new_user)
+            .execute(conn)?;
 
         let inserted_angajat = angajati::table
-        .order(angajati::id.desc()) // Assuming id is auto-incremented
-        .first(conn)?; // Get the last inserted angajat
+            .order(angajati::id.desc()) // Assuming id is auto-incremented
+            .first(conn)?; // Get the last inserted angajat
 
         Ok(inserted_angajat)
     }
 
     pub fn get_all_angajati(conn: &mut MysqlConnection) -> Result<Vec<Self>, DieselError> {
-        let angajati_list = angajati::table
-            .load::<SqlAngajat>(conn)?; // Load all angajati from the database
+        let angajati_list = angajati::table.load::<SqlAngajat>(conn)?; // Load all angajati from the database
 
         Ok(angajati_list)
     }
@@ -58,10 +64,12 @@ impl SqlAngajat {
             telefon: self.telefon.clone().unwrap_or_default(),
             banca_id: self.banca_id.unwrap_or(0),
         }
-
     }
 
     pub fn to_app_models(angajati: Vec<Self>) -> Vec<models::Angajat> {
-        angajati.into_iter().map(|angajat| angajat.to_app_model()).collect()
+        angajati
+            .into_iter()
+            .map(|angajat| angajat.to_app_model())
+            .collect()
     }
 }

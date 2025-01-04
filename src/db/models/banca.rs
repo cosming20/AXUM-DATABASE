@@ -1,9 +1,11 @@
-use diesel::{prelude::*, MysqlConnection};
-use serde::{Deserialize, Serialize};
 use crate::db::schema::*;
 use diesel::result::Error as DieselError;
+use diesel::{prelude::*, MysqlConnection};
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset,
+)]
 #[diesel(table_name = banca)]
 pub struct SqlBanca {
     pub id: i32,
@@ -23,12 +25,16 @@ pub struct NewBanca {
 impl SqlBanca {
     // Create a new banca
     pub fn create_banca(
-        conn: &mut MysqlConnection,  // Accept MySQL connection here (synchronous)
-        nume: String, 
-        adresa: String, 
-        sucursala_id: i32
+        conn: &mut MysqlConnection, // Accept MySQL connection here (synchronous)
+        nume: String,
+        adresa: String,
+        sucursala_id: i32,
     ) -> Result<Self, DieselError> {
-        let new_banca = NewBanca { nume, adresa, sucursala_id };
+        let new_banca = NewBanca {
+            nume,
+            adresa,
+            sucursala_id,
+        };
 
         diesel::insert_into(banca::table)
             .values(&new_banca)
@@ -43,8 +49,7 @@ impl SqlBanca {
 
     // Fetch all banci
     pub fn get_all_banci(conn: &mut MysqlConnection) -> Result<Vec<Self>, DieselError> {
-        let banci_list = banca::table
-            .load::<SqlBanca>(conn)?; // Load all banci from the database
+        let banci_list = banca::table.load::<SqlBanca>(conn)?; // Load all banci from the database
 
         Ok(banci_list)
     }
