@@ -2,6 +2,7 @@ use diesel::{prelude::*, MysqlConnection};
 use serde::{Deserialize, Serialize};
 use crate::db::schema::*;
 use diesel::result::Error as DieselError;
+use crate::app::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset)]
 #[diesel(table_name = angajati)]
@@ -43,10 +44,24 @@ impl SqlAngajat {
         Ok(inserted_angajat)
     }
 
-pub fn get_all_angajati(conn: &mut MysqlConnection) -> Result<Vec<Self>, DieselError> {
-    let angajati_list = angajati::table
-        .load::<SqlAngajat>(conn)?; // Load all angajati from the database
+    pub fn get_all_angajati(conn: &mut MysqlConnection) -> Result<Vec<Self>, DieselError> {
+        let angajati_list = angajati::table
+            .load::<SqlAngajat>(conn)?; // Load all angajati from the database
 
-    Ok(angajati_list)
-}
+        Ok(angajati_list)
+    }
+
+    pub fn to_app_model(&self) -> models::Angajat {
+        models::Angajat {
+            nume: self.nume.clone().unwrap_or_default(),
+            prenume: self.prenume.clone().unwrap_or_default(),
+            telefon: self.telefon.clone().unwrap_or_default(),
+            banca_id: self.banca_id.unwrap_or(0),
+        }
+
+    }
+
+    pub fn to_app_models(angajati: Vec<Self>) -> Vec<models::Angajat> {
+        angajati.into_iter().map(|angajat| angajat.to_app_model()).collect()
+    }
 }

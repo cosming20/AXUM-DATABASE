@@ -1,5 +1,6 @@
 use leptos::*;
 use leptos::prelude::ServerFnError;
+use crate::app;
 use crate::db::models::*;
 
 #[server]
@@ -26,7 +27,7 @@ pub async fn create_angajati(
 }
 
 #[server]
-pub async fn get_angajati() -> Result<Vec<SqlAngajat>, ServerFnError> {
+pub async fn get_angajati() -> Result<Vec<app::models::Angajat>, ServerFnError> {
     use crate::establish_connection;
     use crate::db::models::SqlAngajat;
 
@@ -36,7 +37,8 @@ pub async fn get_angajati() -> Result<Vec<SqlAngajat>, ServerFnError> {
         Ok(angajati) => {
             // Successfully retrieved angajati
             println!("Angajati retrieved: {:?}", angajati);
-            Ok(angajati) // Return the retrieved angajati in the Ok variant
+            let angajat_app = SqlAngajat::to_app_models(angajati);
+            Ok(angajat_app) // Return the retrieved angajati in the Ok variant
         },
         Err(e) => {
             // Handle the error
@@ -45,5 +47,7 @@ pub async fn get_angajati() -> Result<Vec<SqlAngajat>, ServerFnError> {
         }
     }
 }
+
+
 
 
