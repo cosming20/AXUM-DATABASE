@@ -17,23 +17,19 @@ tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 tower = { version = "0.4", optional = true }
 tower-http = { version = "0.5", features = ["fs"], optional = true }
 wasm-bindgen = "=0.2.99"
-# thiserror = "1"
-# http = "1"
 serde = { version = "1.0.147", features = ["derive"] }
-# anyhow = "1.0"
-# diesel = { version = "2.1.6", features = ["chrono"], optional = true }
-# diesel-async = { version = "0.4.1", features = ["bb8", "mysql"], optional = true }
 diesel = { version = "2.2.6", features = ["mysql"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 diesel-async = "0.5.2"
 dotenv = "0.15"
 log = "0.4"
-# diesel-async = { version = "0.5.2", features = ["bb8", "mysql"] }
 thiserror = { version = "1.0.37" }
+thaw = { version = "0.4.0", features = ["nightly"] }
+
 
 
 [features]
-hydrate = ["leptos/hydrate"]
+hydrate = ["leptos/hydrate", "thaw/hydrate"]
 ssr = [
     "dep:axum",
     "dep:tokio",
@@ -43,6 +39,7 @@ ssr = [
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
+    "thaw/ssr",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
