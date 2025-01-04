@@ -1,7 +1,5 @@
 use crate::api::*;
-use crate::db::*;
 use chrono::{DateTime, Utc};
-use leptos::logging::log;
 use leptos::task::spawn_local;
 use leptos::{html::table, prelude::*};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
@@ -125,9 +123,19 @@ pub enum TableState {
     Sucursale,
 }
 
+#[derive(Clone)]
+pub enum TableStateEditor {
+    Hidden,
+    Angajati,
+    Banci,
+    Sucursale,
+}
+
 #[component]
 fn MainPage() -> impl IntoView {
     let (table_state, set_table_state) = signal(TableState::Hidden);
+    let (table_state_editor, set_table_state_editor) = signal(TableStateEditor::Hidden);
+
     let on_click_angajati = move |_| {
         set_table_state(TableState::Angajati);
     };
@@ -137,7 +145,16 @@ fn MainPage() -> impl IntoView {
     let on_click_sucursale = move |_| {
         set_table_state(TableState::Sucursale);
     };
-    let async_data = LocalResource::new(move || get_angajati());
+
+    let on_click_angajati2 = move |_| {
+        set_table_state_editor(TableStateEditor::Angajati);
+    };
+    let on_click_banci2 = move |_| {
+        set_table_state_editor(TableStateEditor::Banci);
+    };
+    let on_click_sucursale2 = move |_| {
+        set_table_state_editor(TableStateEditor::Sucursale);
+    };
     view! {
             <Layout has_sider=true>
             <LayoutSider attr:style="background-color: #0078ff99; padding: 20px;">
@@ -145,11 +162,14 @@ fn MainPage() -> impl IntoView {
                         on_click_angajati=on_click_angajati
                         on_click_banci=on_click_banci
                         on_click_sucursale=on_click_sucursale
+                        on_click_angajati2=on_click_angajati2
+                        on_click_banci2=on_click_banci2
+                        on_click_sucursale2=on_click_sucursale2
                 />
             </LayoutSider>
             <Layout>
                 <LayoutHeader attr:style="background-color: #0078ffaa; padding: 20px;">
-                    "Header"
+                    "PIBD PROJECT"
                 </LayoutHeader>
                 <Layout attr:style="background-color: #0078ff88; padding: 20px;">
                     <Tables table_state=table_state/>
@@ -164,12 +184,15 @@ pub fn NavComponent(
     #[prop()] on_click_angajati: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
     #[prop()] on_click_banci: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
     #[prop()] on_click_sucursale: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
+    #[prop()] on_click_angajati2: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
+    #[prop()] on_click_banci2: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
+    #[prop()] on_click_sucursale2: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
 ) -> impl IntoView {
     view! {
         <NavDrawer>
             <NavCategory value="table">
                 <NavCategoryItem slot icon=icondata::AiTableOutlined>
-                    "Table"
+                    "Table Viewer"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati value="target">
                     "Angajati"
@@ -181,20 +204,20 @@ pub fn NavComponent(
                     "Sucursale"
                 </NavSubItem>
             </NavCategory>
-            // <NavCategory value="pie">
-            //     <NavCategoryItem slot icon=icondata::AiPieChartOutlined>
-            //         "Pie Chart"
-            //     </NavCategoryItem>
-            //     <NavSubItem value="pie-target">
-            //         "Pie Target"
-            //     </NavSubItem>
-            //     <NavSubItem value="pin-above">
-            //         "Pin Above"
-            //     </NavSubItem>
-            //     <NavSubItem value="pin-below">
-            //         "Pin Below"
-            //     </NavSubItem>
-            // </NavCategory>
+            <NavCategory value="editor">
+                <NavCategoryItem slot icon=icondata::BiCalendarEditRegular>
+                    "Table Editor"
+                </NavCategoryItem>
+                <NavSubItem on:click=on_click_angajati2 value="target">
+                    "Angajati"
+                </NavSubItem>
+                <NavSubItem on:click=on_click_banci2 value="above">
+                    "Banci"
+                </NavSubItem>
+                <NavSubItem on:click=on_click_sucursale2 value="below">
+                    "Sucursale"
+                </NavSubItem>
+            </NavCategory>
             <NavItem
                 icon=icondata::AiGithubOutlined
                 value="github"
@@ -212,18 +235,10 @@ pub fn NavComponent(
 
 #[component]
 pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
-    use crate::app::models::Angajat;
-    // let VecAngajat: Vec<Angajat> = Vec::new();
-    // let async_data = Resource::new(
-    //     move || count.get(),
-    //     // every time `count` changes, this will run
-    //     |count| get_angajati() 
-    // );
     let once = OnceResource::new(get_angajati());
-    // let angajati_data = Resource::new(move || get_angajati());
-    let async_banci = LocalResource::new(move || get_banci());
-    let async_sucursale = LocalResource::new(move || get_sucursale());
-     // Read the data from LocalResourc
+    let banci = OnceResource::new(get_banci());
+    let sucursale = OnceResource::new(get_sucursale());
+    
     view! {
         <div>
             <Transition fallback=move || {
@@ -245,37 +260,36 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                 <TableBody>
                                 {
                                     move || {
-                                        
-                                        let table_rows = move || {
-                                            match once.read().as_ref() {
-                                                Some(Ok(angajati)) => angajati.iter().map(|angajat| {
-                                                    view! {
-                                                        <TableRow>
-                                                            <TableCell>{angajat.nume.clone()}</TableCell>
-                                                            <TableCell>{angajat.prenume.clone()}</TableCell>
-                                                            <TableCell>{angajat.telefon.clone()}</TableCell>
-                                                            <TableCell>{angajat.banca_id}</TableCell>
-                                                        </TableRow>
-                                                    }
-                                                }).collect::<Vec<_>>(),
-                            
-                                                Some(Err(e)) => vec![view! {
+                                  
+                                        let angajati_data = once.read().as_ref().cloned();
+                                        match angajati_data {
+                                            Some(Ok(angajati)) => angajati.clone().into_iter().map(|angajat| {
+                                                view! {
                                                     <TableRow>
-                                                        <TableCell >
-                                                            {format!("Error: {}", e)}
-                                                        </TableCell>
+                                                        <TableCell>{angajat.nume.clone()}</TableCell>
+                                                        <TableCell>{angajat.prenume.clone()}</TableCell>
+                                                        <TableCell>{angajat.telefon.clone()}</TableCell>
+                                                        <TableCell>{angajat.banca_id}</TableCell>
                                                     </TableRow>
-                                                }],
-                            
-                                                None => vec![view! {
-                                                    <TableRow>
-                                                        <TableCell >
-                                                            "Loading..."
-                                                        </TableCell>
-                                                    </TableRow>
-                                                }],
-                                            }
-                                        };
+                                                }
+                                            }).collect::<Vec<_>>(),
+                    
+                                            Some(Err(e)) => vec![view! {
+                                                <TableRow>
+                                                    <TableCell >
+                                                        {format!("Error: {}", e)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            }],
+                    
+                                            None => vec![view! {
+                                                <TableRow>
+                                                    <TableCell >
+                                                        "Loading..."
+                                                    </TableCell>
+                                                </TableRow>
+                                            }],
+                                        }
                                     }
                                 }
                                 </TableBody>
@@ -283,79 +297,99 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                             }
                         }
                         TableState::Banci => {
-                            // Handle the case for Banci
+
                             view! {
                                 <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHeaderCell>"Tag"</TableHeaderCell>
-                <TableHeaderCell>"Count"</TableHeaderCell>
-                <TableHeaderCell>"Date"</TableHeaderCell>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            <TableRow>
-                <TableCell>
-                    <TableCellLayout>
-                        "div"
-                    </TableCellLayout>
-                </TableCell>
-                <TableCell>
-                    <TableCellLayout>
-                        "2"
-                    </TableCellLayout>
-                </TableCell>
-                <TableCell>
-                    <TableCellLayout>
-                        "2023-10-08"
-                    </TableCellLayout>
-                </TableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell>"span"</TableCell>
-                <TableCell>"2"</TableCell>
-                <TableCell>"2023-10-08"</TableCell>
-            </TableRow>
-        </TableBody>
-    </Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHeaderCell>"Nume"</TableHeaderCell>
+                                        <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                        <TableHeaderCell>"Sucursala ID"</TableHeaderCell>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {
+                                    move || {
+                                  
+                                        let banca_data = banci.read().as_ref().cloned();
+                                        match banca_data {
+                                            Some(Ok(banci)) => banci.clone().into_iter().map(|banca| {
+                                                view! {
+                                                    <TableRow>
+                                                        <TableCell>{banca.nume.clone()}</TableCell>
+                                                        <TableCell>{banca.adresa.clone()}</TableCell>
+                                                        <TableCell>{banca.sucursala_id}</TableCell>
+                                                    </TableRow>
+                                                }
+                                            }).collect::<Vec<_>>(),
+                    
+                                            Some(Err(e)) => vec![view! {
+                                                <TableRow>
+                                                    <TableCell >
+                                                        {format!("Error: {}", e)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            }],
+                    
+                                            None => vec![view! {
+                                                <TableRow>
+                                                    <TableCell >
+                                                        "Loading..."
+                                                    </TableCell>
+                                                </TableRow>
+                                            }],
+                                        }
+                                    }
+                                }
+                                </TableBody>
+                            </Table>
                             }
                         }
                         TableState::Sucursale => {
-                            // Handle the case for Sucursale
+                            
                             view! {
                                 <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHeaderCell>"Tag"</TableHeaderCell>
-                <TableHeaderCell>"Count"</TableHeaderCell>
-                <TableHeaderCell>"Date"</TableHeaderCell>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            <TableRow>
-                <TableCell>
-                    <TableCellLayout>
-                        "div"
-                    </TableCellLayout>
-                </TableCell>
-                <TableCell>
-                    <TableCellLayout>
-                        "2"
-                    </TableCellLayout>
-                </TableCell>
-                <TableCell>
-                    <TableCellLayout>
-                        "2023-10-08"
-                    </TableCellLayout>
-                </TableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell>"span"</TableCell>
-                <TableCell>"2"</TableCell>
-                <TableCell>"2023-10-08"</TableCell>
-            </TableRow>
-        </TableBody>
-    </Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHeaderCell>"Nume"</TableHeaderCell>
+                                        <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {
+                                    move || {
+                                  
+                                        let sucursala_data = sucursale.read().as_ref().cloned();
+                                        match sucursala_data {
+                                            Some(Ok(sucursale)) => sucursale.clone().into_iter().map(|sucursala| {
+                                                view! {
+                                                    <TableRow>
+                                                        <TableCell>{sucursala.nume.clone()}</TableCell>
+                                                        <TableCell>{sucursala.adresa.clone()}</TableCell>
+                                                    </TableRow>
+                                                }
+                                            }).collect::<Vec<_>>(),
+                    
+                                            Some(Err(e)) => vec![view! {
+                                                <TableRow>
+                                                    <TableCell >
+                                                        {format!("Error: {}", e)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            }],
+                    
+                                            None => vec![view! {
+                                                <TableRow>
+                                                    <TableCell >
+                                                        "Loading..."
+                                                    </TableCell>
+                                                </TableRow>
+                                            }],
+                                        }
+                                    }
+                                }
+                                </TableBody>
+                            </Table>
                             }
                         }
                         TableState::Hidden => {
@@ -364,35 +398,33 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                 <Table>
         <TableHeader>
             <TableRow>
-                <TableHeaderCell>"Tag"</TableHeaderCell>
-                <TableHeaderCell>"Count"</TableHeaderCell>
-                <TableHeaderCell>"Date"</TableHeaderCell>
+                <TableHeaderCell>"Here you can see the content of the tables"</TableHeaderCell>
             </TableRow>
         </TableHeader>
-        <TableBody>
-            <TableRow>
-                <TableCell>
-                    <TableCellLayout>
-                        "div"
-                    </TableCellLayout>
-                </TableCell>
-                <TableCell>
-                    <TableCellLayout>
-                        "2"
-                    </TableCellLayout>
-                </TableCell>
-                <TableCell>
-                    <TableCellLayout>
-                        "2023-10-08"
-                    </TableCellLayout>
-                </TableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell>"span"</TableCell>
-                <TableCell>"2"</TableCell>
-                <TableCell>"2023-10-08"</TableCell>
-            </TableRow>
-        </TableBody>
+        // <TableBody>
+        //     <TableRow>
+        //         <TableCell>
+        //             <TableCellLayout>
+        //                 "div"
+        //             </TableCellLayout>
+        //         </TableCell>
+        //         <TableCell>
+        //             <TableCellLayout>
+        //                 "2"
+        //             </TableCellLayout>
+        //         </TableCell>
+        //         <TableCell>
+        //             <TableCellLayout>
+        //                 "2023-10-08"
+        //             </TableCellLayout>
+        //         </TableCell>
+        //     </TableRow>
+        //     <TableRow>
+        //         <TableCell>"span"</TableCell>
+        //         <TableCell>"2"</TableCell>
+        //         <TableCell>"2023-10-08"</TableCell>
+        //     </TableRow>
+        // </TableBody>
     </Table>
                             }
                         }

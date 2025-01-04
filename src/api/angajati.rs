@@ -44,7 +44,7 @@ pub async fn get_angajati() -> Result<Vec<app::models::Angajat>, ServerFnError> 
             // Successfully retrieved angajati
             println!("Angajati retrieved: {:?}", angajati);
             let angajat_app = SqlAngajat::to_app_models(angajati);
-            println!("Angajati  modelat retrieved: {:?}", angahat_app);
+            println!("Angajati  modelat retrieved: {:?}", angajat_app);
             Ok(angajat_app) // Return the retrieved angajati in the Ok variant
         }
         Err(e) => {

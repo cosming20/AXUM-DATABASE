@@ -1,3 +1,4 @@
+use crate::app::models;
 use crate::db::models::*;
 use leptos::prelude::ServerFnError;
 use leptos::*;
@@ -27,7 +28,7 @@ pub async fn create_sucursala(nume: String, adresa: String) -> Result<SqlSucursa
 }
 
 #[server]
-pub async fn get_sucursale() -> Result<Vec<SqlSucursala>, ServerFnError> {
+pub async fn get_sucursale() -> Result<Vec<models::Sucursala>, ServerFnError> {
     use crate::db::models::SqlSucursala;
     use crate::establish_connection;
 
@@ -37,7 +38,8 @@ pub async fn get_sucursale() -> Result<Vec<SqlSucursala>, ServerFnError> {
         Ok(sucursale) => {
             // Successfully retrieved sucursale
             println!("Sucursale retrieved: {:?}", sucursale);
-            Ok(sucursale) // Return the retrieved sucursale in the Ok variant
+            let sucursala_app = SqlSucursala::to_app_models(sucursale);
+            Ok(sucursala_app) // Return the retrieved sucursale in the Ok variant
         }
         Err(e) => {
             // Handle the error

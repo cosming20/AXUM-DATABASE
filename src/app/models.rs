@@ -13,7 +13,7 @@ pub struct Angajat {
 pub struct Banca {
     pub nume: String,
     pub adresa: String,
-    pub sucursala: i32,
+    pub sucursala_id: i32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

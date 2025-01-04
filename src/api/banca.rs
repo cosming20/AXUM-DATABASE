@@ -1,3 +1,4 @@
+use crate::app;
 use crate::db::models::*;
 use leptos::prelude::ServerFnError;
 use leptos::*;
@@ -28,7 +29,7 @@ pub async fn create_banca(
 }
 
 #[server]
-pub async fn get_banci() -> Result<Vec<SqlBanca>, ServerFnError> {
+pub async fn get_banci() -> Result<Vec<app::models::Banca>, ServerFnError> {
     use crate::db::models::SqlBanca;
     use crate::establish_connection;
 
@@ -38,7 +39,8 @@ pub async fn get_banci() -> Result<Vec<SqlBanca>, ServerFnError> {
         Ok(banci) => {
             // Successfully retrieved banci
             println!("Banci retrieved: {:?}", banci);
-            Ok(banci) // Return the retrieved banci in the Ok variant
+            let banci_app = SqlBanca::to_app_models(banci);
+            Ok(banci_app) // Return the retrieved banci in the Ok variant
         }
         Err(e) => {
             // Handle the error

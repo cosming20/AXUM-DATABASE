@@ -1,3 +1,4 @@
+use crate::app::models;
 use crate::db::schema::*;
 use diesel::result::Error as DieselError;
 use diesel::{prelude::*, MysqlConnection};
@@ -45,5 +46,19 @@ impl SqlSucursala {
         let sucursale_list = sucursala::table.load::<SqlSucursala>(conn)?; // Load all sucursale from the database
 
         Ok(sucursale_list)
+    }
+
+    pub fn to_app_model(&self) -> models::Sucursala {
+        models::Sucursala {
+            nume: self.nume.clone().unwrap_or_default(),
+            adresa: self.adresa.clone().unwrap_or_default(),
+        }
+    }
+
+    pub fn to_app_models(sucursale: Vec<Self>) -> Vec<models::Sucursala> {
+        sucursale
+            .into_iter()
+            .map(|sucursala| sucursala.to_app_model())
+            .collect()
     }
 }

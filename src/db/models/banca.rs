@@ -2,6 +2,7 @@ use crate::db::schema::*;
 use diesel::result::Error as DieselError;
 use diesel::{prelude::*, MysqlConnection};
 use serde::{Deserialize, Serialize};
+use crate::app::*;
 
 #[derive(
     Serialize, Deserialize, Debug, Clone, Queryable, Identifiable, Selectable, AsChangeset,
@@ -23,7 +24,7 @@ pub struct NewBanca {
 }
 
 impl SqlBanca {
-    // Create a new banca
+    
     pub fn create_banca(
         conn: &mut MysqlConnection, // Accept MySQL connection here (synchronous)
         nume: String,
@@ -52,5 +53,20 @@ impl SqlBanca {
         let banci_list = banca::table.load::<SqlBanca>(conn)?; // Load all banci from the database
 
         Ok(banci_list)
+    }
+
+    pub fn to_app_model(&self) -> models::Banca {
+        models::Banca {
+            nume: self.nume.clone().unwrap_or_default(),
+            adresa: self.adresa.clone().unwrap_or_default(),
+            sucursala_id: self.sucursala_id.unwrap_or(0),
+        }
+    }
+
+    pub fn to_app_models(banci: Vec<Self>) -> Vec<models::Banca> {
+        banci
+            .into_iter()
+            .map(|banca| banca.to_app_model())
+            .collect()
     }
 }
