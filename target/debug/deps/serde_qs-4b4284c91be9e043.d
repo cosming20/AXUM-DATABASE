@@ -1,0 +1,10 @@
+/Users/cosmingagea/workspace/pibdv2/pibd/target/debug/deps/libserde_qs-4b4284c91be9e043.rmeta: /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/lib.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/de/mod.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/de/parse.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/error.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/ser.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/utils.rs
+
+/Users/cosmingagea/workspace/pibdv2/pibd/target/debug/deps/serde_qs-4b4284c91be9e043.d: /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/lib.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/de/mod.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/de/parse.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/error.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/ser.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/utils.rs
+
+/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/lib.rs:
+/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/de/mod.rs:
+/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/de/parse.rs:
+/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/error.rs:
+/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/ser.rs:
+/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_qs-0.13.0/src/utils.rs:
