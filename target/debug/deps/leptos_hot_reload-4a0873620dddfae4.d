@@ -1,9 +1,0 @@
-/Users/cosmingagea/workspace/pibdv2/pibd/target/debug/deps/libleptos_hot_reload-4a0873620dddfae4.rmeta: /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/lib.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/diff.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/node.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/parsing.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/patch.js
-
-/Users/cosmingagea/workspace/pibdv2/pibd/target/debug/deps/leptos_hot_reload-4a0873620dddfae4.d: /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/lib.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/diff.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/node.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/parsing.rs /Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/patch.js
-
-/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/lib.rs:
-/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/diff.rs:
-/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/node.rs:
-/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/parsing.rs:
-/Users/cosmingagea/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/leptos_hot_reload-0.7.2/src/patch.js:
