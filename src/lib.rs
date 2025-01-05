@@ -1,8 +1,9 @@
 pub mod api;
 pub mod app;
 pub mod db;
-use app::pibd::App;
-#[macro_use]
+
+// use app::pibd::App;
+// #[macro_use]
 extern crate diesel;
 extern crate dotenv;
 // pub mod schema;
@@ -23,6 +24,7 @@ pub fn establish_connection() -> MysqlConnection {
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
     // use crate::pibd::src::app::*;
+    use app::pibd::*;
     console_error_panic_hook::set_once();
     leptos::mount::hydrate_body(App);
 }

@@ -1,8 +1,6 @@
 use crate::api::*;
-use chrono::{DateTime, Utc};
-use leptos::ev::toggle;
 use leptos::task::spawn_local;
-use leptos::{html::table, prelude::*};
+use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
@@ -10,7 +8,6 @@ use leptos_router::{
 };
 use thaw::*;
 use web_sys::MouseEvent;
-use leptos::ev;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -404,7 +401,7 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
     let input_banca = RwSignal::new(String::from(""));
     let current_state = table_state_editor.get();
     leptos::logging::log!("giani{:?}", current_state);
-    let submit_banca = move |event| {
+    let submit_banca = move |_event| {
         
         let nume_banca_value = input_nume.get().clone();
         let adresa_banca_value = input_adresa.get().clone();
@@ -424,7 +421,7 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
         leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",input_nume.get(),input_adresa.get(), input_banca.get());
     };
 
-    let submit_sucursala = move |event| {
+    let submit_sucursala = move |_event| {
         
         let nume_sucursala_value = input_nume.get().clone();
         let adresa_sucursala_value = input_adresa.get().clone();
@@ -445,7 +442,7 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
         leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume_sucursala.get(),input_adresa.get(), input_banca.get());
     };
 
-    let submit_angajat = move |event| {
+    let submit_angajat = move |_event| {
         
         let nume_angajat_value = input_nume.get().clone();
         let prenume_angajat_value = input_prenume.get().clone();
