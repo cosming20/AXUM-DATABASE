@@ -57,6 +57,7 @@ impl SqlBanca {
 
     pub fn to_app_model(&self) -> models::Banca {
         models::Banca {
+            id: self.id,
             nume: self.nume.clone().unwrap_or_default(),
             adresa: self.adresa.clone().unwrap_or_default(),
             sucursala_id: self.sucursala_id.unwrap_or(0),

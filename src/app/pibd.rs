@@ -1,5 +1,6 @@
 use crate::api::*;
 use chrono::{DateTime, Utc};
+use leptos::ev::toggle;
 use leptos::task::spawn_local;
 use leptos::{html::table, prelude::*};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
@@ -9,6 +10,7 @@ use leptos_router::{
 };
 use thaw::*;
 use web_sys::MouseEvent;
+use leptos::ev;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -115,7 +117,7 @@ fn HomePage() -> impl IntoView {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum TableState {
     Hidden,
     Angajati,
@@ -123,7 +125,7 @@ pub enum TableState {
     Sucursale,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum TableStateEditor {
     Hidden,
     Angajati,
@@ -135,29 +137,51 @@ pub enum TableStateEditor {
 fn MainPage() -> impl IntoView {
     let (table_state, set_table_state) = signal(TableState::Hidden);
     let (table_state_editor, set_table_state_editor) = signal(TableStateEditor::Hidden);
-
+    let (viewer,set_viewer) = signal(true);
+    let (editor,set_editor) = signal(true);
     let on_click_angajati = move |_| {
+        set_table_state_editor(TableStateEditor::Hidden);
         set_table_state(TableState::Angajati);
+        set_editor(false);
+        set_viewer(true);
+
     };
     let on_click_banci = move |_| {
+        set_table_state_editor(TableStateEditor::Hidden);
         set_table_state(TableState::Banci);
+        set_editor(false);
+        set_viewer(true);
     };
     let on_click_sucursale = move |_| {
+        set_table_state_editor(TableStateEditor::Hidden);
         set_table_state(TableState::Sucursale);
+        set_editor(false);
+        set_viewer(true);
     };
 
     let on_click_angajati2 = move |_| {
+        set_table_state(TableState::Hidden);
         set_table_state_editor(TableStateEditor::Angajati);
+        set_viewer(false);
+        set_editor(true);
     };
     let on_click_banci2 = move |_| {
+        set_table_state(TableState::Hidden);
         set_table_state_editor(TableStateEditor::Banci);
+        set_viewer(false);
+        set_editor(true);
     };
     let on_click_sucursale2 = move |_| {
+        set_table_state(TableState::Hidden);
         set_table_state_editor(TableStateEditor::Sucursale);
+        set_viewer(false);
+        set_editor(true);
     };
+
+
     view! {
             <Layout has_sider=true>
-            <LayoutSider attr:style="background-color: #0078ff99; padding: 20px;">
+            <LayoutSider attr:style="background-color: #white; padding: 20px;">
                 <NavComponent
                         on_click_angajati=on_click_angajati
                         on_click_banci=on_click_banci
@@ -168,11 +192,16 @@ fn MainPage() -> impl IntoView {
                 />
             </LayoutSider>
             <Layout>
-                <LayoutHeader attr:style="background-color: #0078ffaa; padding: 20px;">
+                <LayoutHeader attr:style="background-color: #white; padding: 20px;">
                     "PIBD PROJECT"
                 </LayoutHeader>
-                <Layout attr:style="background-color: #0078ff88; padding: 20px;">
+                <Layout attr:style="background-color: #white; padding: 20px;">
+                    <Show when=viewer>
                     <Tables table_state=table_state/>
+                    </Show>
+                    <Show when=editor>
+                    <Editor/>
+                    </Show>
                 </Layout>
             </Layout>
         </Layout>
@@ -191,7 +220,7 @@ pub fn NavComponent(
     view! {
         <NavDrawer>
             <NavCategory value="table">
-                <NavCategoryItem slot icon=icondata::AiTableOutlined>
+                <NavCategoryItem  slot icon=icondata::AiTableOutlined>
                     "Table Viewer"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati value="target">
@@ -208,13 +237,13 @@ pub fn NavComponent(
                 <NavCategoryItem slot icon=icondata::BiCalendarEditRegular>
                     "Table Editor"
                 </NavCategoryItem>
-                <NavSubItem on:click=on_click_angajati2 value="target">
+                <NavSubItem on:click=on_click_angajati2 value="angajat">
                     "Angajati"
                 </NavSubItem>
-                <NavSubItem on:click=on_click_banci2 value="above">
+                <NavSubItem on:click=on_click_banci2 value="banca">
                     "Banci"
                 </NavSubItem>
-                <NavSubItem on:click=on_click_sucursale2 value="below">
+                <NavSubItem on:click=on_click_sucursale2 value="sucursala">
                     "Sucursale"
                 </NavSubItem>
             </NavCategory>
@@ -401,30 +430,6 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                 <TableHeaderCell>"Here you can see the content of the tables"</TableHeaderCell>
             </TableRow>
         </TableHeader>
-        // <TableBody>
-        //     <TableRow>
-        //         <TableCell>
-        //             <TableCellLayout>
-        //                 "div"
-        //             </TableCellLayout>
-        //         </TableCell>
-        //         <TableCell>
-        //             <TableCellLayout>
-        //                 "2"
-        //             </TableCellLayout>
-        //         </TableCell>
-        //         <TableCell>
-        //             <TableCellLayout>
-        //                 "2023-10-08"
-        //             </TableCellLayout>
-        //         </TableCell>
-        //     </TableRow>
-        //     <TableRow>
-        //         <TableCell>"span"</TableCell>
-        //         <TableCell>"2"</TableCell>
-        //         <TableCell>"2023-10-08"</TableCell>
-        //     </TableRow>
-        // </TableBody>
     </Table>
                             }
                         }
@@ -434,3 +439,61 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
         </div>
     }
 }
+
+#[component]
+pub fn Editor()-> impl IntoView {
+    let (angajat_text, set_angajat_text) = signal(String::new());
+    let nume = RwSignal::new(String::from(""));
+    let prenume = RwSignal::new(String::from(""));
+    let banca = RwSignal::new(String::from(""));
+    let submit_angajat = move |event| {
+        
+
+        set_angajat_text(String::new());
+        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
+    };
+    let banci = OnceResource::new(get_banci());
+    // let banca_data = banci.read().as_ref().cloned().unwrap().unwrap();
+    let banca_data = match banci.read().as_ref() {
+        Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+        Some(Err(e)) => {
+            // Handle the error case, for example log the error or return a default value
+            log::error!("Error fetching banci: {:?}", e);
+            Vec::new() // Return an empty Vec<Banca> in case of error
+        }
+        None => {
+            // Handle the None case, for example log the issue or return a default value
+            log::error!("No data found for banci");
+            Vec::new() // Return an empty Vec<Banca> in case of None
+        }
+    };
+    view! {
+        <FieldContextProvider>
+            <Field label="Nume" name="username">
+                <Input value=nume rules=vec![InputRule::required(true.into())]/>
+            </Field>
+            <Field label="Prenume" name="password">
+                <Input value=prenume rules=vec![InputRule::required(true.into())]/>
+            </Field>
+            <Field label="Combobox" name="combobox">
+                <Combobox value=banca rules=vec![ComboboxRule::required(true.into())] placeholder="Select an animal" clearable=true>
+                {
+                    banca_data.iter().map(|banca| {
+                        view! {
+                            <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()}/>
+                        }
+                    }).collect::<Vec<_>>()
+                }
+                </Combobox>
+            </Field>
+            <div style="margin-top: 8px">
+            <button on:click=submit_angajat>
+            "Submit"
+            </button>
+            </div>
+        </FieldContextProvider>
+
+    }
+}
+
+

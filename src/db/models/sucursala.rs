@@ -50,6 +50,7 @@ impl SqlSucursala {
 
     pub fn to_app_model(&self) -> models::Sucursala {
         models::Sucursala {
+            id: self.id,
             nume: self.nume.clone().unwrap_or_default(),
             adresa: self.adresa.clone().unwrap_or_default(),
         }

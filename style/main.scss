@@ -1,21 +1,17 @@
 body {
 	font-family: sans-serif;
 	text-align: center;
-	background-color: transparent;
+	background-color: white;
 }
 
 .thaw-table-row {
 	text-align: left;
 }
 
-.thaw-layout {
-	color: white;
-}
-
 .thaw-layout-sider {
 	width: 250px; // Adjust the width of the slider
 	height: 100%; // Full height of the page
-	background-color: #333; // Slider background color (can be changed)
+	background-color: #white; // Slider background color (can be changed)
 	position: fixed; // Fix the slider to the left
 	left: 0;
 	top: 0;

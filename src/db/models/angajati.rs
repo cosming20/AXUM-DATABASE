@@ -59,6 +59,7 @@ impl SqlAngajat {
 
     pub fn to_app_model(&self) -> models::Angajat {
         models::Angajat {
+            id: self.id,
             nume: self.nume.clone().unwrap_or_default(),
             prenume: self.prenume.clone().unwrap_or_default(),
             telefon: self.telefon.clone().unwrap_or_default(),
