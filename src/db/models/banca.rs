@@ -10,8 +10,8 @@ use crate::app::*;
 #[diesel(table_name = banca)]
 pub struct SqlBanca {
     pub id: i32,
-    pub nume: Option<String>,
-    pub adresa: Option<String>,
+    pub nume: String,
+    pub adresa: String,
 }
 
 #[derive(Insertable)]
@@ -27,7 +27,6 @@ impl SqlBanca {
         conn: &mut MysqlConnection, // Accept MySQL connection here (synchronous)
         nume: String,
         adresa: String,
-        sucursala_id: i32,
     ) -> Result<Self, DieselError> {
         let new_banca = NewBanca {
             nume,
@@ -55,8 +54,8 @@ impl SqlBanca {
     pub fn to_app_model(&self) -> models::Banca {
         models::Banca {
             id: self.id,
-            nume: self.nume.clone().unwrap_or_default(),
-            adresa: self.adresa.clone().unwrap_or_default(),
+            nume: self.nume.clone(),
+            adresa: self.adresa.clone(),
         }
     }
 
@@ -65,5 +64,22 @@ impl SqlBanca {
             .into_iter()
             .map(|banca| banca.to_app_model())
             .collect()
+    }
+
+    pub fn get_banca_by_id(conn: &mut MysqlConnection, banca_id: i32) -> Result<Self, DieselError> {
+        let banca = banca::table
+            .filter(banca::id.eq(banca_id))
+            .first::<SqlBanca>(conn)?;
+
+        Ok(banca)
+    }
+
+    pub fn get_id_by_banca(conn: &mut MysqlConnection, banca_nume: String) -> Result<i32, DieselError> {
+        let banca = banca::table
+            .filter(banca::nume.eq(banca_nume))
+            .select(banca::id)
+            .first::<i32>(conn)?;
+
+        Ok(banca)
     }
 }

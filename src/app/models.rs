@@ -22,5 +22,6 @@ pub struct Sucursala {
     pub id: i32,
     pub nume: String,
     pub adresa: String,
-    pub banca_id: i32
+    pub banca_id: i32,
+    pub banca_nume: String,
 }

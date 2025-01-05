@@ -62,58 +62,9 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    // Creates a reactive value to update the button
-    let count = RwSignal::new(0);
-    // let on_click = move |_| *count.write() += 1;
-    let nume = RwSignal::new(String::from("Marcel"));
-    let prenume = RwSignal::new(String::from("Ciolacu"));
-    let telefon = RwSignal::new(String::from("0757422485"));
-    let data_angajarii = RwSignal::new(Utc::now());
-    let banca_id = RwSignal::new(1);
-
-    let on_click = move |_| {
-        let nume_value = nume.get().clone();
-        let prenume_value = prenume.get().clone();
-        let telefon_value = telefon.get().clone();
-        let banca_id_value = banca_id.get();
-        use crate::api::create_angajati;
-        spawn_local(async move {
-            match create_angajati(nume_value, prenume_value, telefon_value, banca_id_value).await {
-                Ok(angajat) => {
-                    // Handle successful creation of angajat
-                    log::info!("Angajat creat: {:?}", angajat);
-                }
-                Err(e) => {
-                    // Handle error
-                    log::error!("Eroare la crearea angajatului: {:?}", e);
-                }
-            }
-        });
-    };
-    // let on_submit = move |_| {
-    //     let nume_value = nume.get().clone();
-    //     let prenume_value = prenume.get().clone();
-    //     let telefon_value = telefon.get().clone();
-    //     let data_angajarii_value = data_angajarii.get();
-    //     let banca_id_value = banca_id.get();
-
-    //     spawn_local(async move {
-    //         match create_angajati(nume_value, prenume_value, telefon_value, data_angajarii_value, banca_id_value).await {
-    //             Ok(angajat) => {
-    //                 // Handle successful creation of angajat
-    //                 log::info!("Angajat creat: {:?}", angajat);
-    //             }
-    //             Err(e) => {
-    //                 // Handle error
-    //                 log::error!("Eroare la crearea angajatului: {:?}", e);
-    //             }
-    //         }
-    //     });
-    // };
-
+    
     view! {
         <h1>"Welcome to Leptos!"</h1>
-        <button on:click=on_click>"Click Me: " {count}</button>
     }
 }
 
@@ -333,7 +284,6 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                     <TableRow>
                                         <TableHeaderCell>"Nume"</TableHeaderCell>
                                         <TableHeaderCell>"Adresa"</TableHeaderCell>
-                                        <TableHeaderCell>"Sucursala ID"</TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -347,7 +297,7 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                                     <TableRow>
                                                         <TableCell>{banca.nume.clone()}</TableCell>
                                                         <TableCell>{banca.adresa.clone()}</TableCell>
-                                                        <TableCell>{banca.sucursala_id}</TableCell>
+
                                                     </TableRow>
                                                 }
                                             }).collect::<Vec<_>>(),
@@ -382,12 +332,13 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                     <TableRow>
                                         <TableHeaderCell>"Nume"</TableHeaderCell>
                                         <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                        <TableHeaderCell>"Banca"</TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                 {
                                     move || {
-                                  
+
                                         let sucursala_data = sucursale.read().as_ref().cloned();
                                         match sucursala_data {
                                             Some(Ok(sucursale)) => sucursale.clone().into_iter().map(|sucursala| {
@@ -395,6 +346,7 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                                     <TableRow>
                                                         <TableCell>{sucursala.nume.clone()}</TableCell>
                                                         <TableCell>{sucursala.adresa.clone()}</TableCell>
+                                                        <TableCell>{sucursala.banca_nume}</TableCell>
                                                     </TableRow>
                                                 }
                                             }).collect::<Vec<_>>(),
@@ -442,53 +394,79 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
 
 #[component]
 pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl IntoView {
-    let (angajat_text, set_angajat_text) = signal(String::new());
     let nume = RwSignal::new(String::from(""));
     let prenume = RwSignal::new(String::from(""));
     let banca = RwSignal::new(String::from(""));
-    let nume_banca = RwSignal::new(String::from(""));
     let nume_sucursala = RwSignal::new(String::from(""));
     let input_nume = RwSignal::new(String::from(""));
     let input_prenume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
-    let sucursale = OnceResource::new(get_sucursale());
+    let input_banca = RwSignal::new(String::from(""));
     let current_state = table_state_editor.get();
     leptos::logging::log!("giani{:?}", current_state);
     let submit_banca = move |event| {
         
-
-        set_angajat_text(String::new());
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
+        let nume_banca_value = input_nume.get().clone();
+        let adresa_banca_value = input_adresa.get().clone();
+        use crate::api::create_banca;
+        spawn_local(async move {
+            match create_banca(nume_banca_value, adresa_banca_value).await {
+                Ok(banca) => {
+                    // Handle successful creation of banca
+                    log::info!("Banca creată: {:?}", banca);
+                }
+                Err(e) => {
+                    // Handle error
+                    log::error!("Eroare la crearea băncii: {:?}", e);
+                }
+            }
+        });
+        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",input_nume.get(),input_adresa.get(), input_banca.get());
     };
 
     let submit_sucursala = move |event| {
         
-
-        set_angajat_text(String::new());
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
+        let nume_sucursala_value = input_nume.get().clone();
+        let adresa_sucursala_value = input_adresa.get().clone();
+        
+        use crate::api::create_sucursala;
+        spawn_local(async move {
+            match create_sucursala(nume_sucursala_value, adresa_sucursala_value, input_banca.get()).await {
+                Ok(sucursala) => {
+                    // Handle successful creation of sucursala
+                    log::info!("Sucursala creată: {:?}", sucursala);
+                }
+                Err(e) => {
+                    // Handle error
+                    log::error!("Eroare la crearea sucursalei: {:?}", e);
+                }
+            }
+        });
+        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume_sucursala.get(),input_adresa.get(), input_banca.get());
     };
 
     let submit_angajat = move |event| {
         
+        let nume_angajat_value = input_nume.get().clone();
+        let prenume_angajat_value = input_prenume.get().clone();
+        let telefon_angajat_value = input_adresa.get().clone();
 
-        set_angajat_text(String::new());
+        use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
+        spawn_local(async move {
+            match create_angajat(nume_angajat_value, prenume_angajat_value, telefon_angajat_value, input_banca.get()).await {
+                Ok(angajat) => {
+                    // Handle successful creation of angajat
+                    log::info!("Angajat creat: {:?}", angajat);
+                }
+                Err(e) => {
+                    // Handle error
+                    log::error!("Eroare la crearea angajatului: {:?}", e);
+                }
+            }
+        });
         leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
     };
     let banci = OnceResource::new(get_banci());
-    // let banca_data = banci.read().as_ref().cloned().unwrap().unwrap();
-    let banca_data = match banci.read().as_ref() {
-        Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
-        Some(Err(e)) => {
-            // Handle the error case, for example log the error or return a default value
-            log::error!("Error fetching banci: {:?}", e);
-            Vec::new() // Return an empty Vec<Banca> in case of error
-        }
-        None => {
-            // Handle the None case, for example log the issue or return a default value
-            log::error!("No data found for banci");
-            Vec::new() // Return an empty Vec<Banca> in case of None
-        }
-    };
 
     let (angajat, set_angajat) = signal(false);
     let (bancaview, set_banca) = signal(false);
@@ -522,7 +500,7 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                         <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
                     </Field>
                     <Field label="Banca" name="combobox">
-                        <Combobox value=nume_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
+                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
                         { 
                             // Map over the banca_data and return the combobox options directly
                             let banca_data = match banci.read().as_ref() {
@@ -559,31 +537,6 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                     <Field label="Adresa" name="adresa">
                         <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
                     </Field>
-                    <Field label="Sucursala" name="combobox">
-                        <Combobox value=nume_sucursala rules=vec![ComboboxRule::required(true.into())] placeholder="Sucursala" clearable=true>
-                        { 
-                            // Map over the banca_data and return the combobox options directly
-                            let sucursala_data = match sucursale.read().as_ref() {
-                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
-                                Some(Err(e)) => {
-                                    // Handle the error case, for example log the error or return a default value
-                                    log::error!("Error fetching banci: {:?}", e);
-                                    Vec::new() // Return an empty Vec<Banca> in case of error
-                                }
-                                None => {
-                                    // Handle the None case, for example log the issue or return a default value
-                                    log::error!("No data found for banci");
-                                    Vec::new() // Return an empty Vec<Banca> in case of None
-                                }
-                            };
-                            sucursala_data.iter().map(|sucursala| {
-                                view! {
-                                    <ComboboxOption value={sucursala.id.to_string()} text={sucursala.nume.clone()} />
-                                }
-                            }).collect::<Vec<_>>() // Collect the views into a Vec
-                        }
-                        </Combobox>
-                    </Field>
                     <div style="margin-top: 8px">
                         <button on:click=submit_banca>
                             "Submit"
@@ -596,6 +549,31 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                     </Field>
                     <Field label="Adresa" name="adresa">
                         <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Banca" name="combobox">
+                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
+                        { 
+                            // Map over the banca_data and return the combobox options directly
+                            let banca_data = match banci.read().as_ref() {
+                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                Some(Err(e)) => {
+                                    // Handle the error case, for example log the error or return a default value
+                                    log::error!("Error fetching banci: {:?}", e);
+                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                }
+                                None => {
+                                    // Handle the None case, for example log the issue or return a default value
+                                    log::error!("No data found for banci");
+                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                }
+                            };
+                            banca_data.iter().map(|banca| {
+                                view! {
+                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
+                                }
+                            }).collect::<Vec<_>>() // Collect the views into a Vec
+                        }
+                        </Combobox>
                     </Field>
                     <div style="margin-top: 8px">
                         <button on:click=submit_sucursala>

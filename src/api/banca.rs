@@ -7,14 +7,13 @@ use leptos::*;
 pub async fn create_banca(
     nume: String,
     adresa: String,
-    sucursala_id: i32,
 ) -> Result<SqlBanca, ServerFnError> {
     use crate::db::models::SqlBanca;
     use crate::establish_connection;
 
     let mut conn = establish_connection();
 
-    match SqlBanca::create_banca(&mut conn, nume, adresa, sucursala_id) {
+    match SqlBanca::create_banca(&mut conn, nume, adresa) {
         Ok(banca) => {
             // Successfully created banca
             println!("Banca created: {:?}", banca);
@@ -47,6 +46,54 @@ pub async fn get_banci() -> Result<Vec<app::models::Banca>, ServerFnError> {
             eprintln!("Error retrieving banci: {:?}", e);
             Err(ServerFnError::new(format!(
                 "Error retrieving banci: {:?}",
+                e
+            ))) // Return the error in the Err variant
+        }
+    }
+}
+
+#[server]
+pub async fn get_banca_nume_by_id(banca_id: i32) -> Result<String, ServerFnError> {
+    use crate::db::models::SqlBanca;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    match SqlBanca::get_banca_by_id(&mut conn, banca_id) {
+        Ok(banca) => {
+            // Successfully retrieved banca
+            println!("Banca retrieved: {:?}", banca);
+            Ok(banca.nume) // Return the name of the banca in the Ok variant
+        }
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error retrieving banca by id: {:?}", e);
+            Err(ServerFnError::new(format!(
+                "Error retrieving banca by id: {:?}",
+                e
+            ))) // Return the error in the Err variant
+        }
+    }
+}
+
+#[server]
+pub async fn get_banca_id_by_nume(nume: String) -> Result<i32, ServerFnError> {
+    use crate::db::models::SqlBanca;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    match SqlBanca::get_id_by_banca(&mut conn, nume) {
+        Ok(banca_id) => {
+            // Successfully retrieved banca_id
+            println!("Banca ID retrieved: {:?}", banca_id);
+            Ok(banca_id) // Return the banca_id in the Ok variant
+        }
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error retrieving banca ID by nume: {:?}", e);
+            Err(ServerFnError::new(format!(
+                "Error retrieving banca ID by nume: {:?}",
                 e
             ))) // Return the error in the Err variant
         }

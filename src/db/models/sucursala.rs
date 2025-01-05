@@ -10,9 +10,9 @@ use serde::{Deserialize, Serialize};
 #[diesel(table_name = sucursala)]
 pub struct SqlSucursala {
     pub id: i32,
-    pub nume: Option<String>,
-    pub adresa: Option<String>,
-    pub banca_id: Option<i32>
+    pub nume: String,
+    pub adresa: String,
+    pub banca_id: i32,
 }
 
 #[derive(Insertable)]
@@ -29,8 +29,9 @@ impl SqlSucursala {
         conn: &mut MysqlConnection, // Accept MySQL connection here (synchronous)
         nume: String,
         adresa: String,
+        banca_id: i32,
     ) -> Result<Self, DieselError> {
-        let new_sucursala = NewSucursala { nume, adresa };
+        let new_sucursala = NewSucursala { nume, adresa, banca_id };
 
         diesel::insert_into(sucursala::table)
             .values(&new_sucursala)
@@ -50,19 +51,31 @@ impl SqlSucursala {
         Ok(sucursale_list)
     }
 
-    pub fn to_app_model(&self) -> models::Sucursala {
+    pub fn to_app_model(&self, conn: &mut MysqlConnection) -> models::Sucursala {
+        use diesel::prelude::*;
+
+        let get_nume = sucursala::table
+            .inner_join(banca::table)
+            .filter(sucursala::banca_id.eq(self.banca_id))
+            .select(banca::nume)
+            .first::<String>(conn);
+
+        let banca_nume = get_nume.unwrap_or(("NO bank").to_string());
+
         models::Sucursala {
             id: self.id,
-            nume: self.nume.clone().unwrap_or_default(),
-            adresa: self.adresa.clone().unwrap_or_default(),
-            banca_id: self.banca_id.unwrap_or(0),
+            nume: self.nume.clone(),
+            adresa: self.adresa.clone(),
+            banca_id: self.banca_id,
+            banca_nume: banca_nume.clone(),
         }
     }
 
-    pub fn to_app_models(sucursale: Vec<Self>) -> Vec<models::Sucursala> {
+    pub fn to_app_models(sucursale: Vec<Self>, conn: &mut MysqlConnection) -> Vec<models::Sucursala> {
         sucursale
             .into_iter()
-            .map(|sucursala| sucursala.to_app_model())
+            .map(|sucursala| sucursala.to_app_model(conn))
             .collect()
     }
+
 }

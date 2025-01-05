@@ -10,10 +10,10 @@ use serde::{Deserialize, Serialize};
 #[diesel(table_name = angajati)]
 pub struct SqlAngajat {
     pub id: i32,
-    pub nume: Option<String>,
-    pub prenume: Option<String>,
-    pub telefon: Option<String>,
-    pub banca_id: Option<i32>,
+    pub nume: String,
+    pub prenume: String,
+    pub telefon: String,
+    pub banca_id: i32,
 }
 
 #[derive(Insertable)]
@@ -60,12 +60,12 @@ impl SqlAngajat {
     pub fn to_app_model(&self) -> models::Angajat {
         models::Angajat {
             id: self.id,
-            nume: self.nume.clone().unwrap_or_default(),
-            prenume: self.prenume.clone().unwrap_or_default(),
-            telefon: self.telefon.clone().unwrap_or_default(),
-            banca_id: self.banca_id.unwrap_or(0),
+            nume: self.nume.clone(),
+            prenume: self.prenume.clone(),
+            telefon: self.telefon.clone(),
+            banca_id: self.banca_id,
         }
-    }
+    }  
 
     pub fn to_app_models(angajati: Vec<Self>) -> Vec<models::Angajat> {
         angajati
