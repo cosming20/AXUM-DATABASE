@@ -37,4 +37,8 @@ diesel::table! {
 diesel::joinable!(angajati -> banca (banca_id));
 diesel::joinable!(banca -> sucursala (sucursala_id));
 
-diesel::allow_tables_to_appear_in_same_query!(angajati, banca, sucursala,);
+diesel::allow_tables_to_appear_in_same_query!(
+    angajati,
+    banca,
+    sucursala,
+);

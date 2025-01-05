@@ -15,7 +15,6 @@ pub struct Banca {
     pub id: i32,
     pub nume: String,
     pub adresa: String,
-    pub sucursala_id: i32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -23,4 +22,5 @@ pub struct Sucursala {
     pub id: i32,
     pub nume: String,
     pub adresa: String,
+    pub banca_id: i32
 }

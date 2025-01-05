@@ -4,5 +4,6 @@ CREATE TABLE angajati (
     nume VARCHAR(255),
     prenume VARCHAR(255),
     telefon VARCHAR(255),
-    banca_id INT REFERENCES banca(id)
+    banca_id INT,
+    FOREIGN KEY (banca_id) REFERENCES banca(id) ON DELETE CASCADE
 );

@@ -125,7 +125,7 @@ pub enum TableState {
     Sucursale,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum TableStateEditor {
     Hidden,
     Angajati,
@@ -197,10 +197,10 @@ fn MainPage() -> impl IntoView {
                 </LayoutHeader>
                 <Layout attr:style="background-color: #white; padding: 20px;">
                     <Show when=viewer>
-                    <Tables table_state=table_state/>
+                    <Tables table_state=table_state.get()/>
                     </Show>
                     <Show when=editor>
-                    <Editor/>
+                    <Editor table_state_editor=table_state_editor.get()/>
                     </Show>
                 </Layout>
             </Layout>
@@ -441,11 +441,33 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
 }
 
 #[component]
-pub fn Editor()-> impl IntoView {
+pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl IntoView {
     let (angajat_text, set_angajat_text) = signal(String::new());
     let nume = RwSignal::new(String::from(""));
     let prenume = RwSignal::new(String::from(""));
     let banca = RwSignal::new(String::from(""));
+    let nume_banca = RwSignal::new(String::from(""));
+    let nume_sucursala = RwSignal::new(String::from(""));
+    let input_nume = RwSignal::new(String::from(""));
+    let input_prenume = RwSignal::new(String::from(""));
+    let input_adresa = RwSignal::new(String::from(""));
+    let sucursale = OnceResource::new(get_sucursale());
+    let current_state = table_state_editor.get();
+    leptos::logging::log!("giani{:?}", current_state);
+    let submit_banca = move |event| {
+        
+
+        set_angajat_text(String::new());
+        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
+    };
+
+    let submit_sucursala = move |event| {
+        
+
+        set_angajat_text(String::new());
+        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
+    };
+
     let submit_angajat = move |event| {
         
 
@@ -467,32 +489,122 @@ pub fn Editor()-> impl IntoView {
             Vec::new() // Return an empty Vec<Banca> in case of None
         }
     };
+
+    let (angajat, set_angajat) = signal(false);
+    let (bancaview, set_banca) = signal(false);
+    let (sucursalaview, set_sucursala) = signal(false);
+
+    if table_state_editor.get() == TableStateEditor::Angajati {
+        set_angajat(true); 
+        set_sucursala(false);
+        set_banca(false); 
+    }
+
+    if table_state_editor.get() == TableStateEditor::Banci {
+        set_banca(true); 
+        set_angajat(false); 
+        set_sucursala(false);
+    }
+
+    if table_state_editor.get() == TableStateEditor::Sucursale {
+        set_sucursala(true); 
+        set_banca(false); 
+        set_angajat(false); 
+    }
+    
     view! {
         <FieldContextProvider>
-            <Field label="Nume" name="username">
-                <Input value=nume rules=vec![InputRule::required(true.into())]/>
-            </Field>
-            <Field label="Prenume" name="password">
-                <Input value=prenume rules=vec![InputRule::required(true.into())]/>
-            </Field>
-            <Field label="Combobox" name="combobox">
-                <Combobox value=banca rules=vec![ComboboxRule::required(true.into())] placeholder="Select an animal" clearable=true>
-                {
-                    banca_data.iter().map(|banca| {
-                        view! {
-                            <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()}/>
+            <Show when=angajat>
+                    <Field label="Nume" name="nume">
+                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Prenume" name="prenume">
+                        <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Banca" name="combobox">
+                        <Combobox value=nume_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
+                        { 
+                            // Map over the banca_data and return the combobox options directly
+                            let banca_data = match banci.read().as_ref() {
+                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                Some(Err(e)) => {
+                                    // Handle the error case, for example log the error or return a default value
+                                    log::error!("Error fetching banci: {:?}", e);
+                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                }
+                                None => {
+                                    // Handle the None case, for example log the issue or return a default value
+                                    log::error!("No data found for banci");
+                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                }
+                            };
+                            banca_data.iter().map(|banca| {
+                                view! {
+                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
+                                }
+                            }).collect::<Vec<_>>() // Collect the views into a Vec
                         }
-                    }).collect::<Vec<_>>()
-                }
-                </Combobox>
-            </Field>
-            <div style="margin-top: 8px">
-            <button on:click=submit_angajat>
-            "Submit"
-            </button>
-            </div>
-        </FieldContextProvider>
-
+                        </Combobox>
+                    </Field>
+                    <div style="margin-top: 8px">
+                        <button on:click=submit_angajat>
+                            "Submit"
+                        </button>
+                    </div>
+            </Show>
+            <Show when=bancaview>
+                    <Field label="Nume" name="nume">
+                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Adresa" name="adresa">
+                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Sucursala" name="combobox">
+                        <Combobox value=nume_sucursala rules=vec![ComboboxRule::required(true.into())] placeholder="Sucursala" clearable=true>
+                        { 
+                            // Map over the banca_data and return the combobox options directly
+                            let sucursala_data = match sucursale.read().as_ref() {
+                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                Some(Err(e)) => {
+                                    // Handle the error case, for example log the error or return a default value
+                                    log::error!("Error fetching banci: {:?}", e);
+                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                }
+                                None => {
+                                    // Handle the None case, for example log the issue or return a default value
+                                    log::error!("No data found for banci");
+                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                }
+                            };
+                            sucursala_data.iter().map(|sucursala| {
+                                view! {
+                                    <ComboboxOption value={sucursala.id.to_string()} text={sucursala.nume.clone()} />
+                                }
+                            }).collect::<Vec<_>>() // Collect the views into a Vec
+                        }
+                        </Combobox>
+                    </Field>
+                    <div style="margin-top: 8px">
+                        <button on:click=submit_banca>
+                            "Submit"
+                        </button>
+                    </div>
+            </Show>
+            <Show when=sucursalaview>
+                    <Field label="Nume" name="adresa">
+                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Adresa" name="adresa">
+                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <div style="margin-top: 8px">
+                        <button on:click=submit_sucursala>
+                            "Submit"
+                        </button>
+                    </div>
+            </Show>
+            </FieldContextProvider>
+        
     }
 }
 

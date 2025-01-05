@@ -12,7 +12,6 @@ pub struct SqlBanca {
     pub id: i32,
     pub nume: Option<String>,
     pub adresa: Option<String>,
-    pub sucursala_id: Option<i32>,
 }
 
 #[derive(Insertable)]
@@ -20,7 +19,6 @@ pub struct SqlBanca {
 pub struct NewBanca {
     pub nume: String,
     pub adresa: String,
-    pub sucursala_id: i32,
 }
 
 impl SqlBanca {
@@ -34,7 +32,6 @@ impl SqlBanca {
         let new_banca = NewBanca {
             nume,
             adresa,
-            sucursala_id,
         };
 
         diesel::insert_into(banca::table)
@@ -60,7 +57,6 @@ impl SqlBanca {
             id: self.id,
             nume: self.nume.clone().unwrap_or_default(),
             adresa: self.adresa.clone().unwrap_or_default(),
-            sucursala_id: self.sucursala_id.unwrap_or(0),
         }
     }
 

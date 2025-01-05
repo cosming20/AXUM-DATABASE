@@ -12,6 +12,7 @@ pub struct SqlSucursala {
     pub id: i32,
     pub nume: Option<String>,
     pub adresa: Option<String>,
+    pub banca_id: Option<i32>
 }
 
 #[derive(Insertable)]
@@ -19,6 +20,7 @@ pub struct SqlSucursala {
 pub struct NewSucursala {
     pub nume: String,
     pub adresa: String,
+    pub banca_id: i32,
 }
 
 impl SqlSucursala {
@@ -53,6 +55,7 @@ impl SqlSucursala {
             id: self.id,
             nume: self.nume.clone().unwrap_or_default(),
             adresa: self.adresa.clone().unwrap_or_default(),
+            banca_id: self.banca_id.unwrap_or(0),
         }
     }
 
