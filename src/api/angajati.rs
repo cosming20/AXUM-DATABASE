@@ -15,21 +15,6 @@ pub async fn create_angajat(
 
     let mut conn = establish_connection();
 
-    // match SqlAngajat::create_angajat(&mut conn, nume, prenume, telefon, banca_id) {
-    //     Ok(angajat) => {
-    //         // Successfully created angajat
-    //         println!("Angajat created: {:?}", angajat);
-    //         Ok(angajat) // Return the created angajat in the Ok variant
-    //     }
-    //     Err(e) => {
-    //         // Handle the error
-    //         eprintln!("Error creating angajat: {:?}", e);
-    //         Err(ServerFnError::new(format!(
-    //             "Error creating angajat: {:?}",
-    //             e
-    //         ))) // Return the error in the Err variant
-    //     }
-    // }
     use crate::api::banca::*;
     match get_banca_id_by_nume(banca_nume).await {
         Ok(banca_id) => {
@@ -80,6 +65,29 @@ pub async fn get_angajati() -> Result<Vec<app::models::Angajat>, ServerFnError> 
             eprintln!("Error retrieving angajati: {:?}", e);
             Err(ServerFnError::new(format!(
                 "Error retrieving angajati: {:?}",
+                e
+            ))) // Return the error in the Err variant
+        }
+    }
+}
+
+#[server]
+pub async fn delete_angajat(angajat_id: i32) -> Result<(), ServerFnError> {
+    use crate::db::models::SqlAngajat;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    match SqlAngajat::delete_angajat(&mut conn, angajat_id) {
+        Ok(_) => {
+            println!("Angajat with ID {} deleted successfully.", angajat_id);
+            Ok(()) // Return Ok variant indicating success
+        }
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error deleting angajat: {:?}", e);
+            Err(ServerFnError::new(format!(
+                "Error deleting angajat: {:?}",
                 e
             ))) // Return the error in the Err variant
         }

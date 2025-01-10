@@ -73,4 +73,15 @@ impl SqlAngajat {
             .map(|angajat| angajat.to_app_model())
             .collect()
     }
+
+    pub fn delete_angajat(conn: &mut MysqlConnection, angajat_id: i32) -> Result<(), DieselError> {
+        let deleted_rows = diesel::delete(angajati::table.filter(angajati::id.eq(angajat_id)))
+            .execute(conn)?;
+
+        if deleted_rows == 0 {
+            Err(DieselError::NotFound) // Return an error if no rows were deleted
+        } else {
+            Ok(()) // Return Ok variant indicating success
+        }
+}
 }

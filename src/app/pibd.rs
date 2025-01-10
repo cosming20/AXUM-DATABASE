@@ -169,7 +169,7 @@ pub fn NavComponent(
         <NavDrawer>
             <NavCategory value="table">
                 <NavCategoryItem  slot icon=icondata::AiTableOutlined>
-                    "Table Viewer"
+                    "View data"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati value="target">
                     "Angajati"
@@ -183,7 +183,7 @@ pub fn NavComponent(
             </NavCategory>
             <NavCategory value="editor">
                 <NavCategoryItem slot icon=icondata::BiCalendarEditRegular>
-                    "Table Editor"
+                    "Add data"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati2 value="angajat">
                     "Angajati"
@@ -215,7 +215,30 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
     let once = OnceResource::new(get_angajati());
     let banci = OnceResource::new(get_banci());
     let sucursale = OnceResource::new(get_sucursale());
+
+    // let angajati_data = once.read().as_ref().cloned();
+
+    let (edit_card, set_edit_card) = signal(false);
     
+    let edit = move |_| {
+        set_edit_card(true);
+
+    };
+
+    let deletea = move |angajat_id: i32| {
+        spawn_local(async move {
+            delete_angajat(angajat_id).await;
+        });
+        let mut angajati = once.read().as_ref().cloned().unwrap();
+
+            // Filter out the deleted employee
+            
+
+            
+            
+            // Update the OnceResource with the new list
+            
+    };
     view! {
         <div>
             <Transition fallback=move || {
@@ -232,21 +255,29 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                         <TableHeaderCell>"Prenume"</TableHeaderCell>
                                         <TableHeaderCell>"Telefon"</TableHeaderCell>
                                         <TableHeaderCell>"Banca ID"</TableHeaderCell>
+                                        <TableHeaderCell></TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                 {
                                     move || {
                                   
-                                        let angajati_data = once.read().as_ref().cloned();
-                                        match angajati_data {
+                                        // let angajati_data = once.read().as_ref().cloned();
+                                        match once.get() {
                                             Some(Ok(angajati)) => angajati.clone().into_iter().map(|angajat| {
                                                 view! {
+                                                    
                                                     <TableRow>
                                                         <TableCell>{angajat.nume.clone()}</TableCell>
                                                         <TableCell>{angajat.prenume.clone()}</TableCell>
                                                         <TableCell>{angajat.telefon.clone()}</TableCell>
                                                         <TableCell>{angajat.banca_id}</TableCell>
+                                                        <TableCell>
+                                                        <ButtonGroup>
+                                                            <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
+                                                            <Button icon=icondata::AiDeleteOutlined on_click={move |_| deletea(angajat.id.clone())}>"Delete"</Button>
+                                                        </ButtonGroup>
+                                                    </TableCell>
                                                     </TableRow>
                                                 }
                                             }).collect::<Vec<_>>(),
