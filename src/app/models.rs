@@ -7,6 +7,7 @@ pub struct Angajat {
     pub prenume: String,
     pub telefon: String,
     pub banca_id: i32,
+    pub banca_nume: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

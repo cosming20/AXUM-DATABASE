@@ -78,4 +78,65 @@ impl SqlSucursala {
             .collect()
     }
 
+    pub fn delete_sucursala(conn: &mut MysqlConnection, sucursala_id: i32) -> Result<(), DieselError> {
+        let deleted_rows = diesel::delete(sucursala::table.filter(sucursala::id.eq(sucursala_id)))
+            .execute(conn)?;
+
+        if deleted_rows == 0 {
+            Err(DieselError::NotFound) // Return an error if no rows were deleted
+        } else {
+            Ok(()) // Return Ok variant indicating success
+        }
+
+        
+    }
+
+    pub fn edit_sucursala(
+        conn: &mut MysqlConnection, 
+        sucursala_id: i32,
+        nume: Option<String>,
+        adresa: Option<String>,
+        banca_id: i32,
+    ) -> Result<Self, DieselError> {
+         // First, fetch the existing record to update
+         let mut sucursala = sucursala::table
+         .filter(sucursala::id.eq(sucursala_id))
+         .first::<SqlSucursala>(conn)?;
+
+     // Conditionally update fields if they are Some(value)
+     if let Some(nume_value) = nume {
+         sucursala.nume = nume_value;
+     }
+     if let Some(adresa_value) = adresa {
+         sucursala.adresa = adresa_value;
+     }
+
+     sucursala.banca_id = banca_id;
+
+
+     // Now, update the database with the modified values
+     diesel::update(sucursala::table.filter(sucursala::id.eq(sucursala_id)))
+         .set((
+             sucursala::nume.eq(&sucursala.nume),
+             sucursala::adresa.eq(&sucursala.adresa),
+             sucursala::banca_id.eq(&sucursala.banca_id),
+         ))
+         .execute(conn)?;
+
+     // Return the updated angajat
+     Ok(sucursala)
+    }
+
+    pub fn get_banca_id(conn: &mut MysqlConnection, angajat_id: i32)-> Result<i32, DieselError>{
+
+        let angajat = sucursala::table
+            .filter(sucursala::id.eq(angajat_id))
+            .first::<SqlSucursala>(conn);
+
+            match angajat {
+                Ok(angajat) => Ok(angajat.banca_id), // If successful, return banca_id
+                Err(e) => Err(e), // If there was an error, return it
+            }
+    }
+
 }
