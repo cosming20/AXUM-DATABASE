@@ -1,5 +1,5 @@
 use crate::api::*;
-use leptos::task::spawn_local;
+use leptos::{html::Div, task::spawn_local};
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -8,6 +8,7 @@ use leptos_router::{
 };
 use thaw::*;
 use web_sys::MouseEvent;
+use leptos_use::on_click_outside;
 
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -375,6 +376,7 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                     <TableRow>
                                         <TableHeaderCell>"Nume"</TableHeaderCell>
                                         <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                        <TableHeaderCell></TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -407,7 +409,12 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                                     <TableRow>
                                                         <TableCell>{banca.nume.clone()}</TableCell>
                                                         <TableCell>{banca.adresa.clone()}</TableCell>
-
+                                                        <TableCell>
+                                                            <ButtonGroup>
+                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
+                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deleteb(banca.id.clone())}>"Delete"</Button>
+                                                            </ButtonGroup>
+                                                        </TableCell>
                                                     </TableRow>
                                                 }
                                             }).collect::<Vec<_>>(),
@@ -882,10 +889,6 @@ pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: im
     let input_nume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
 
-    let modal_ref = NodeRef::new();
-    let _ = on_click_outside(modal_ref, move |_| {
-        on_feedback_succes(MouseEvent::new("click").unwrap())
-    });
     let submit_banca = move |event| {
         spawn_local(async move {
             let _ =edit_banca(banca_id, Some(input_nume.get()), Some(input_adresa.get())).await;
@@ -895,7 +898,6 @@ pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: im
     };
 
                                     view!{
-                                        <div node_ref=modal_ref>
                                         <FieldContextProvider>
                                         <Field label="Nume" name="nume">
                                         <Input value=input_nume rules=vec![InputRule::required(true.into())] />
@@ -909,7 +911,7 @@ pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: im
                                         </button>
                                     </div>
             </FieldContextProvider>
-                                        </div>
+                                       
 }
 }
          

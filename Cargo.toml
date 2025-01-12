@@ -31,6 +31,7 @@ icondata = { version = "0.5.0", default-features = false, features = [
     "lucide",
 ] }
 web-sys = "0.3"
+leptos-use = "0.15.3"
 
 
 [features]
@@ -45,6 +46,7 @@ ssr = [
     "leptos_meta/ssr",
     "leptos_router/ssr",
     "thaw/ssr",
+    "leptos-use/ssr",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
