@@ -643,17 +643,14 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
 #[component]
 pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl IntoView {
 
-
     let toaster = ToasterInjection::expect_context();
     let nume = RwSignal::new(String::from(""));
     let prenume = RwSignal::new(String::from(""));
     let banca = RwSignal::new(String::from(""));
-    let nume_sucursala = RwSignal::new(String::from(""));
     let input_nume = RwSignal::new(String::from(""));
     let input_prenume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
     let input_banca = RwSignal::new(String::from(""));
-    let current_state = table_state_editor.get();
     let submit_banca = move |_event| {
         
         let nume_banca_value = input_nume.get().clone();
@@ -846,19 +843,16 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
 
 #[component]
 pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
-    let nume = RwSignal::new(String::from(""));
-    let prenume = RwSignal::new(String::from(""));
-    let banca = RwSignal::new(String::from(""));
-    let nume_sucursala = RwSignal::new(String::from(""));
     let input_nume = RwSignal::new(String::from(""));
     let input_prenume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
     let input_banca = RwSignal::new(String::from(""));
+    let toaster = ToasterInjection::expect_context();
     let submit_angajat = move |event| {
 
-        // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
         spawn_local(async move {
-            edit_angajat(angajat_id, Some(input_nume.get()), Some(input_prenume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
+            let _ =edit_angajat(angajat_id, Some(input_nume.get()), Some(input_prenume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
+            dispatch_toast(toaster, ToastIntent::Success);
             on_feedback_succes(event);
         });
     };
@@ -923,17 +917,15 @@ pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes
 
 #[component]
 pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
-    let nume = RwSignal::new(String::from(""));
-    let prenume = RwSignal::new(String::from(""));
-    let banca = RwSignal::new(String::from(""));
     let input_nume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
     let input_banca = RwSignal::new(String::from(""));
+    let toaster = ToasterInjection::expect_context();
     let submit_sucursala = move |event| {
 
-        // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
         spawn_local(async move {
             let _ =edit_sucursala(sucursala_id, Some(input_nume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
+            dispatch_toast(toaster, ToastIntent::Success);
             on_feedback_succes(event);
         });
     };
@@ -999,9 +991,12 @@ pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: im
     let input_nume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
 
+    let toaster = ToasterInjection::expect_context();
+
     let submit_banca = move |event| {
         spawn_local(async move {
             let _ =edit_banca(banca_id, Some(input_nume.get()), Some(input_adresa.get())).await;
+            dispatch_toast(toaster, ToastIntent::Success);
             on_feedback_succes(event);
         });
         
