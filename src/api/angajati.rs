@@ -95,7 +95,7 @@ pub async fn delete_angajat(angajat_id: i32) -> Result<(), ServerFnError> {
 }
 
 #[server]
-pub async fn edit_angajat(angajat_id: i32, nume: Option<String>, prenume: Option<String>, banca: Option<String>) -> Result<(), ServerFnError> {
+pub async fn edit_angajat(angajat_id: i32, nume: Option<String>, prenume: Option<String>, telefon: Option<String>, banca: Option<String>) -> Result<(), ServerFnError> {
     use crate::db::models::SqlAngajat;
     use crate::establish_connection;
 
@@ -106,7 +106,7 @@ pub async fn edit_angajat(angajat_id: i32, nume: Option<String>, prenume: Option
         Some(banca_nume) =>  {
             match get_banca_id_by_nume(banca_nume).await {
                 Ok(banca_id) => {
-                match SqlAngajat::edit_angajat(&mut conn, angajat_id, nume, prenume, banca_id) {
+                match SqlAngajat::edit_angajat(&mut conn, angajat_id, nume, prenume, telefon, banca_id) {
                     Ok(_) => {
                         println!("Angajat with ID {} edited successfully.", angajat_id);
                         Ok(()) // Return Ok variant indicating success
@@ -135,7 +135,7 @@ pub async fn edit_angajat(angajat_id: i32, nume: Option<String>, prenume: Option
         _ => {
             match SqlAngajat::get_banca_id(&mut conn, angajat_id) {
                 Ok(banca_id) => {
-                    match SqlAngajat::edit_angajat(&mut conn, angajat_id, nume, prenume, banca_id) {
+                    match SqlAngajat::edit_angajat(&mut conn, angajat_id, nume, prenume, telefon, banca_id) {
                         Ok(_) => {
                             println!("Angajat with ID {} edited successfully.", angajat_id);
                             Ok(()) // Return Ok variant indicating success

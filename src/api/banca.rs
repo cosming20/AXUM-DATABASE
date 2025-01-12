@@ -99,3 +99,52 @@ pub async fn get_banca_id_by_nume(nume: String) -> Result<i32, ServerFnError> {
         }
     }
 }
+
+
+#[server]
+pub async fn edit_banca(banca_id: i32, nume: Option<String>, adresa: Option<String>) -> Result<(), ServerFnError> {
+    use crate::db::models::SqlBanca;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    match SqlBanca::edit_banca(&mut conn, banca_id, nume, adresa) {
+        Ok(_) => {
+            println!("Banca with ID {} edited successfully.", banca_id);
+            Ok(()) // Return Ok variant indicating success
+        }
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error editing banca: {:?}", e);
+            Err(ServerFnError::new(format!(
+                "Error edit banca: {:?}",
+                e
+            ))) // Return the error in the Err variant
+        }
+    }
+}
+
+
+#[server]
+pub async fn delete_banca(banca_id: i32) -> Result<(), ServerFnError> {
+    use crate::db::models::SqlBanca;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    match SqlBanca::delete_banca(&mut conn, banca_id) {
+        Ok(_) => {
+            println!("Banca with ID {} deleted successfully.", banca_id);
+            Ok(()) // Return Ok variant indicating success
+        }
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error deleting banca: {:?}", e);
+            Err(ServerFnError::new(format!(
+                "Error deleting banca: {:?}",
+                e
+            ))) // Return the error in the Err variant
+        }
+    }
+}
+

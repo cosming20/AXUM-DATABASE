@@ -251,7 +251,7 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
         set_edit_card.set(false); 
         set_delete(false); 
     };
-    // let edit_card = RwSignal::new(false);
+
     let deletea = move |angajat_id: i32| {
         spawn_local(async move {
             let _ = delete_angajat(angajat_id).await;
@@ -260,6 +260,16 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
         set_delete(false);
             
     };
+
+    let deleteb = move |banca_id: i32| {
+        spawn_local(async move {
+            let _ = delete_banca(banca_id).await;
+            set_delete(true);
+        });
+        set_delete(false);
+            
+    };
+
     let deletes = move |sucursala_id: i32| {
         
         spawn_local(async move {
@@ -375,6 +385,25 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                         match banca_data {
                                             Some(Ok(banci)) => banci.clone().into_iter().map(|banca| {
                                                 view! {
+                                                    <Show when=edit_card>
+                                                    <Overlay>
+                                                    <Card>
+        <CardHeader>
+            <Body1>
+                <b>"Edit"</b>
+            </Body1>
+            <CardHeaderDescription slot>
+                <Caption1>"Description"</Caption1>
+            </CardHeaderDescription>
+        </CardHeader>
+        <CardPreview>
+            <BancaEditor banca_id=banca.id on_feedback_succes=on_feedback_succes/>
+        </CardPreview>
+        
+    </Card>
+                                                        
+                                                    </Overlay>
+                                                    </Show>
                                                     <TableRow>
                                                         <TableCell>{banca.nume.clone()}</TableCell>
                                                         <TableCell>{banca.adresa.clone()}</TableCell>
@@ -384,6 +413,13 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                             }).collect::<Vec<_>>(),
                     
                                             Some(Err(e)) => vec![view! {
+                                                <Show when=edit_card>
+                                                    <Overlay>
+                                                    <div class="feedback-card">
+                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
+                                                        </div>
+                                                    </Overlay>
+                                                    </Show>
                                                 <TableRow>
                                                     <TableCell >
                                                         {format!("Error: {}", e)}
@@ -392,6 +428,13 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                             }],
                     
                                             None => vec![view! {
+                                                <Show when=edit_card>
+                                                    <Overlay>
+                                                    <div class="feedback-card">
+                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
+                                                        </div>
+                                                    </Overlay>
+                                                    </Show>
                                                 <TableRow>
                                                     <TableCell >
                                                         "Loading..."
@@ -561,7 +604,6 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                 }
             }
         });
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume_sucursala.get(),input_adresa.get(), input_banca.get());
     };
 
     let submit_angajat = move |_event| {
@@ -617,6 +659,9 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                     </Field>
                     <Field label="Prenume" name="prenume">
                         <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Telefon" name="telefon">
+                        <Input value=input_adresa />
                     </Field>
                     <Field label="Banca" name="combobox">
                         <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
@@ -720,11 +765,9 @@ pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes
 
         // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
         spawn_local(async move {
-            edit_angajat(angajat_id, Some(input_nume.get()), Some(input_prenume.get()), Some(input_banca.get())).await;
+            edit_angajat(angajat_id, Some(input_nume.get()), Some(input_prenume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
             on_feedback_succes(event);
         });
-        
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
     };
     let banci = OnceResource::new(get_banci());
 
@@ -735,6 +778,9 @@ pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes
                     </Field>
                     <Field label="Prenume" name="prenume">
                         <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Telefon" name="telefon">
+                        <Input value=input_adresa />
                     </Field>
                     <Field label="Banca" name="combobox">
                         <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
@@ -775,20 +821,16 @@ pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_su
     let nume = RwSignal::new(String::from(""));
     let prenume = RwSignal::new(String::from(""));
     let banca = RwSignal::new(String::from(""));
-    let nume_sucursala = RwSignal::new(String::from(""));
     let input_nume = RwSignal::new(String::from(""));
-    let input_prenume = RwSignal::new(String::from(""));
     let input_adresa = RwSignal::new(String::from(""));
     let input_banca = RwSignal::new(String::from(""));
     let submit_sucursala = move |event| {
 
         // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
         spawn_local(async move {
-            edit_sucursala(sucursala_id, Some(input_nume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
+            let _ =edit_sucursala(sucursala_id, Some(input_nume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
             on_feedback_succes(event);
         });
-        
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
     };
     let banci = OnceResource::new(get_banci());
 
@@ -835,66 +877,39 @@ pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_su
 }
 
 #[component]
-pub fn BancaEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
-    let nume = RwSignal::new(String::from(""));
-    let prenume = RwSignal::new(String::from(""));
-    let banca = RwSignal::new(String::from(""));
-    let nume_sucursala = RwSignal::new(String::from(""));
-    let input_nume = RwSignal::new(String::from(""));
-    let input_prenume = RwSignal::new(String::from(""));
-    let input_adresa = RwSignal::new(String::from(""));
-    let input_banca = RwSignal::new(String::from(""));
-    let submit_angajat = move |event| {
+pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
 
-        // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
+    let input_nume = RwSignal::new(String::from(""));
+    let input_adresa = RwSignal::new(String::from(""));
+
+    let modal_ref = NodeRef::new();
+    let _ = on_click_outside(modal_ref, move |_| {
+        on_feedback_succes(MouseEvent::new("click").unwrap())
+    });
+    let submit_banca = move |event| {
         spawn_local(async move {
-            edit_angajat(angajat_id, Some(input_nume.get()), Some(input_prenume.get()), Some(input_banca.get())).await;
+            let _ =edit_banca(banca_id, Some(input_nume.get()), Some(input_adresa.get())).await;
             on_feedback_succes(event);
         });
         
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume.get(),prenume.get(), banca.get());
     };
-    let banci = OnceResource::new(get_banci());
 
                                     view!{
+                                        <div node_ref=modal_ref>
                                         <FieldContextProvider>
-                    <Field label="Nume" name="nume">
-                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Prenume" name="prenume">
-                        <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Banca" name="combobox">
-                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
-                        { 
-                            // Map over the banca_data and return the combobox options directly
-                            let banca_data = match banci.read().as_ref() {
-                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
-                                Some(Err(e)) => {
-                                    // Handle the error case, for example log the error or return a default value
-                                    log::error!("Error fetching banci: {:?}", e);
-                                    Vec::new() // Return an empty Vec<Banca> in case of error
-                                }
-                                None => {
-                                    // Handle the None case, for example log the issue or return a default value
-                                    log::error!("No data found for banci");
-                                    Vec::new() // Return an empty Vec<Banca> in case of None
-                                }
-                            };
-                            banca_data.iter().map(|banca| {
-                                view! {
-                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
-                                }
-                            }).collect::<Vec<_>>() // Collect the views into a Vec
-                        }
-                        </Combobox>
-                    </Field>
-                    <div style="margin-top: 8px">
-                        <button on:click=submit_angajat>
-                            "Submit"
-                        </button>
-                    </div>
+                                        <Field label="Nume" name="nume">
+                                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                                    </Field>
+                                    <Field label="Adresa" name="adresa">
+                                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                                    </Field>
+                                    <div style="margin-top: 8px">
+                                        <button on:click=submit_banca>
+                                            "Submit"
+                                        </button>
+                                    </div>
             </FieldContextProvider>
+                                        </div>
 }
 }
          

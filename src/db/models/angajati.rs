@@ -102,6 +102,7 @@ impl SqlAngajat {
         angajat_id: i32,
         nume: Option<String>,
         prenume: Option<String>,
+        telefon: Option<String>,
         banca_id: i32,
     ) -> Result<Self, DieselError> {
          // First, fetch the existing record to update
@@ -116,6 +117,9 @@ impl SqlAngajat {
      if let Some(prenume_value) = prenume {
          angajat.prenume = prenume_value;
      }
+     if let Some(telefon_value) = telefon {
+        angajat.telefon = telefon_value;
+     }
 
      angajat.banca_id = banca_id;
 
@@ -125,6 +129,7 @@ impl SqlAngajat {
          .set((
              angajati::nume.eq(&angajat.nume),
              angajati::prenume.eq(&angajat.prenume),
+             angajati::telefon.eq(&angajat.telefon),
              angajati::banca_id.eq(&angajat.banca_id),
          ))
          .execute(conn)?;
