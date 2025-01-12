@@ -15,21 +15,6 @@ pub async fn create_angajat(
 
     let mut conn = establish_connection();
 
-    // match SqlAngajat::create_angajat(&mut conn, nume, prenume, telefon, banca_id) {
-    //     Ok(angajat) => {
-    //         // Successfully created angajat
-    //         println!("Angajat created: {:?}", angajat);
-    //         Ok(angajat) // Return the created angajat in the Ok variant
-    //     }
-    //     Err(e) => {
-    //         // Handle the error
-    //         eprintln!("Error creating angajat: {:?}", e);
-    //         Err(ServerFnError::new(format!(
-    //             "Error creating angajat: {:?}",
-    //             e
-    //         ))) // Return the error in the Err variant
-    //     }
-    // }
     use crate::api::banca::*;
     match get_banca_id_by_nume(banca_nume).await {
         Ok(banca_id) => {
@@ -71,7 +56,7 @@ pub async fn get_angajati() -> Result<Vec<app::models::Angajat>, ServerFnError> 
         Ok(angajati) => {
             // Successfully retrieved angajati
             println!("Angajati retrieved: {:?}", angajati);
-            let angajat_app = SqlAngajat::to_app_models(angajati);
+            let angajat_app = SqlAngajat::to_app_models(angajati,&mut conn);
             println!("Angajati  modelat retrieved: {:?}", angajat_app);
             Ok(angajat_app) // Return the retrieved angajati in the Ok variant
         }
@@ -82,6 +67,97 @@ pub async fn get_angajati() -> Result<Vec<app::models::Angajat>, ServerFnError> 
                 "Error retrieving angajati: {:?}",
                 e
             ))) // Return the error in the Err variant
+        }
+    }
+}
+
+#[server]
+pub async fn delete_angajat(angajat_id: i32) -> Result<(), ServerFnError> {
+    use crate::db::models::SqlAngajat;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    match SqlAngajat::delete_angajat(&mut conn, angajat_id) {
+        Ok(_) => {
+            println!("Angajat with ID {} deleted successfully.", angajat_id);
+            Ok(()) // Return Ok variant indicating success
+        }
+        Err(e) => {
+            // Handle the error
+            eprintln!("Error deleting angajat: {:?}", e);
+            Err(ServerFnError::new(format!(
+                "Error deleting angajat: {:?}",
+                e
+            ))) // Return the error in the Err variant
+        }
+    }
+}
+
+#[server]
+pub async fn edit_angajat(angajat_id: i32, nume: Option<String>, prenume: Option<String>, telefon: Option<String>, banca: Option<String>) -> Result<(), ServerFnError> {
+    use crate::db::models::SqlAngajat;
+    use crate::establish_connection;
+
+    let mut conn = establish_connection();
+
+    use crate::api::banca::*;
+    match banca {
+        Some(banca_nume) =>  {
+            match get_banca_id_by_nume(banca_nume).await {
+                Ok(banca_id) => {
+                match SqlAngajat::edit_angajat(&mut conn, angajat_id, nume, prenume, telefon, banca_id) {
+                    Ok(_) => {
+                        println!("Angajat with ID {} edited successfully.", angajat_id);
+                        Ok(()) // Return Ok variant indicating success
+                    }
+                    Err(e) => {
+                        // Handle the error
+                        eprintln!("Error editing angajat: {:?}", e);
+                        Err(ServerFnError::new(format!(
+                            "Error edit angajat: {:?}",
+                            e
+                        ))) // Return the error in the Err variant
+                    }
+                }
+            }
+            Err(e) => {
+                // Handle the error
+                eprintln!("Error editing angajat: {:?}", e);
+                Err(ServerFnError::new(format!(
+                    "Error edit angajat: {:?}",
+                    e
+                ))) // Return the error in the Err variant
+            }
+        }
+        
+    }
+        _ => {
+            match SqlAngajat::get_banca_id(&mut conn, angajat_id) {
+                Ok(banca_id) => {
+                    match SqlAngajat::edit_angajat(&mut conn, angajat_id, nume, prenume, telefon, banca_id) {
+                        Ok(_) => {
+                            println!("Angajat with ID {} edited successfully.", angajat_id);
+                            Ok(()) // Return Ok variant indicating success
+                        }
+                        Err(e) => {
+                            // Handle the error
+                            eprintln!("Error editing angajat: {:?}", e);
+                            Err(ServerFnError::new(format!(
+                                "Error edit angajat: {:?}",
+                                e
+                            ))) // Return the error in the Err variant
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error getting banca id from angajat: {:?}", e);
+                        Err(ServerFnError::new(format!(
+                            "Error getting banca id from angajat: {:?}",
+                            e
+                        ))) // Return the error in the Err varia
+                }
+            }
         }
     }
 }

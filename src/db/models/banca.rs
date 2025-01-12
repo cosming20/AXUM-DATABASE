@@ -82,4 +82,44 @@ impl SqlBanca {
 
         Ok(banca)
     }
+
+    pub fn delete_banca(conn: &mut MysqlConnection, banca_id: i32) -> Result<(), DieselError> {
+        let deleted_rows = diesel::delete(banca::table.filter(banca::id.eq(banca_id)))
+            .execute(conn)?;
+
+        if deleted_rows == 0 {
+            Err(DieselError::NotFound) // Return an error if no rows were deleted
+        } else {
+            Ok(()) // Return Ok variant indicating success
+        }
+    }
+
+    pub fn edit_banca(
+        conn: &mut MysqlConnection, 
+        banca_id: i32,
+        nume: Option<String>,
+        adresa: Option<String>,
+    ) -> Result<Self, DieselError> {
+         // First, fetch the existing record to update
+         let mut banca = banca::table
+         .filter(banca::id.eq(banca_id))
+         .first::<SqlBanca>(conn)?;
+
+     // Conditionally update fields if they are Some(value)
+     if let Some(nume_value) = nume {
+         banca.nume = nume_value;
+     }
+     if let Some(adresa_value) = adresa {
+         banca.adresa = adresa_value;
+     }
+     // Now, update the database with the modified values
+     diesel::update(banca::table.filter(banca::id.eq(banca_id)))
+         .set((
+             banca::nume.eq(&banca.nume),
+             banca::adresa.eq(&banca.adresa),
+         ))
+         .execute(conn)?;
+
+     Ok(banca)
+    }
 }

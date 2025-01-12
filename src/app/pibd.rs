@@ -1,5 +1,5 @@
 use crate::api::*;
-use leptos::task::spawn_local;
+use leptos::{html::Div, task::spawn_local};
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -8,6 +8,8 @@ use leptos_router::{
 };
 use thaw::*;
 use web_sys::MouseEvent;
+use leptos_use::on_click_outside;
+
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -169,7 +171,7 @@ pub fn NavComponent(
         <NavDrawer>
             <NavCategory value="table">
                 <NavCategoryItem  slot icon=icondata::AiTableOutlined>
-                    "Table Viewer"
+                    "View data"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati value="target">
                     "Angajati"
@@ -183,7 +185,7 @@ pub fn NavComponent(
             </NavCategory>
             <NavCategory value="editor">
                 <NavCategoryItem slot icon=icondata::BiCalendarEditRegular>
-                    "Table Editor"
+                    "Add data"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati2 value="angajat">
                     "Angajati"
@@ -210,12 +212,74 @@ pub fn NavComponent(
     }
 }
 
+pub fn with_default_class<T>(default_class: &str, class: T) -> String
+where
+    T: Into<Option<String>>,
+{
+    match class.into() {
+        Some(name) => format!("{} {}", default_class, name),
+        None => default_class.to_string(),
+    }
+}
+
+
+#[component]
+#[allow(non_snake_case)]
+pub fn Overlay(#[prop(optional, into)] class: Signal<String>, children: Children) -> impl IntoView {
+    let default_class = "overlay";
+    let class = Signal::derive(move || with_default_class(default_class, class()));
+
+    view! { <div class=class>{children()}</div> }
+}
+
+
 #[component]
 pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
-    let once = OnceResource::new(get_angajati());
+    let (delete_signal, set_delete) = signal(false);
+    let angajati_data = Resource::new(move || delete_signal.get(),|_| get_angajati());
     let banci = OnceResource::new(get_banci());
-    let sucursale = OnceResource::new(get_sucursale());
+    let sucursala_data = Resource::new(move || delete_signal.get(), |_| get_sucursale());
     
+    let (edit_card, set_edit_card) = signal(false);
+    
+    let edit = move |_| {
+        set_edit_card(true);
+        set_delete(true); 
+
+    };
+
+    let on_feedback_succes = move |_| {
+        set_edit_card.set(false); 
+        set_delete(false); 
+    };
+
+    let deletea = move |angajat_id: i32| {
+        spawn_local(async move {
+            let _ = delete_angajat(angajat_id).await;
+            set_delete(true);
+        });
+        set_delete(false);
+            
+    };
+
+    let deleteb = move |banca_id: i32| {
+        spawn_local(async move {
+            let _ = delete_banca(banca_id).await;
+            set_delete(true);
+        });
+        set_delete(false);
+            
+    };
+
+    let deletes = move |sucursala_id: i32| {
+        
+        spawn_local(async move {
+            let _ = delete_sucursala(sucursala_id).await;
+            set_delete(true);
+        });
+        set_delete(false);
+            
+    };
     view! {
         <div>
             <Transition fallback=move || {
@@ -232,42 +296,73 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                         <TableHeaderCell>"Prenume"</TableHeaderCell>
                                         <TableHeaderCell>"Telefon"</TableHeaderCell>
                                         <TableHeaderCell>"Banca ID"</TableHeaderCell>
+                                        <TableHeaderCell></TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {
-                                    move || {
-                                  
-                                        let angajati_data = once.read().as_ref().cloned();
-                                        match angajati_data {
-                                            Some(Ok(angajati)) => angajati.clone().into_iter().map(|angajat| {
+                                {            {move || {
+                                    match angajati_data.get() {
+                                        Some(Ok(angajati)) => {
+                                            angajati.into_iter().map(|angajat| {
                                                 view! {
+                                                    <Show when=edit_card>
+                                                    <Overlay>
+                                                    <Card>
+        <CardHeader>
+            <Body1>
+                <b>"Edit"</b>
+            </Body1>
+            <CardHeaderDescription slot>
+                <Caption1>"Description"</Caption1>
+            </CardHeaderDescription>
+        </CardHeader>
+        <CardPreview>
+            <AngajatEditor angajat_id=angajat.id on_feedback_succes=on_feedback_succes/>
+        </CardPreview>
+        
+    </Card>
+                                                        
+                                                    </Overlay>
+                                                    </Show>
                                                     <TableRow>
                                                         <TableCell>{angajat.nume.clone()}</TableCell>
                                                         <TableCell>{angajat.prenume.clone()}</TableCell>
                                                         <TableCell>{angajat.telefon.clone()}</TableCell>
-                                                        <TableCell>{angajat.banca_id}</TableCell>
+                                                        <TableCell>{angajat.banca_nume}</TableCell>
+                                                        <TableCell>
+                                                            <ButtonGroup>
+                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
+                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deletea(angajat.id.clone())}>"Delete"</Button>
+                                                            </ButtonGroup>
+                                                        </TableCell>
                                                     </TableRow>
                                                 }
-                                            }).collect::<Vec<_>>(),
-                    
-                                            Some(Err(e)) => vec![view! {
-                                                <TableRow>
-                                                    <TableCell >
-                                                        {format!("Error: {}", e)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            }],
-                    
-                                            None => vec![view! {
-                                                <TableRow>
-                                                    <TableCell >
-                                                        "Loading..."
-                                                    </TableCell>
-                                                </TableRow>
-                                            }],
+                                            }).collect::<Vec<_>>()
                                         }
+                                        Some(Err(_e)) => vec![view! {
+                                            <Show when=edit_card>
+                                                    <Overlay>
+                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
+                                                    </Overlay>
+                                                    </Show>
+                                            <TableRow>
+                                                <TableCell>"Error: {e}"</TableCell>
+                                            </TableRow>
+                                        }],
+                                        None => vec![view! {
+                                            <Show when=edit_card>
+                                                    <Overlay>
+                                                    <div class="feedback-card">
+                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
+                                                        </div>
+                                                    </Overlay>
+                                                    </Show>
+                                            <TableRow>
+                                                <TableCell>"Loading..."</TableCell>
+                                            </TableRow>
+                                        }],
                                     }
+                                }}
                                 }
                                 </TableBody>
                             </Table>
@@ -281,6 +376,7 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                     <TableRow>
                                         <TableHeaderCell>"Nume"</TableHeaderCell>
                                         <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                        <TableHeaderCell></TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -291,15 +387,46 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                         match banca_data {
                                             Some(Ok(banci)) => banci.clone().into_iter().map(|banca| {
                                                 view! {
+                                                    <Show when=edit_card>
+                                                    <Overlay>
+                                                    <Card>
+        <CardHeader>
+            <Body1>
+                <b>"Edit"</b>
+            </Body1>
+            <CardHeaderDescription slot>
+                <Caption1>"Description"</Caption1>
+            </CardHeaderDescription>
+        </CardHeader>
+        <CardPreview>
+            <BancaEditor banca_id=banca.id on_feedback_succes=on_feedback_succes/>
+        </CardPreview>
+        
+    </Card>
+                                                        
+                                                    </Overlay>
+                                                    </Show>
                                                     <TableRow>
                                                         <TableCell>{banca.nume.clone()}</TableCell>
                                                         <TableCell>{banca.adresa.clone()}</TableCell>
-
+                                                        <TableCell>
+                                                            <ButtonGroup>
+                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
+                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deleteb(banca.id.clone())}>"Delete"</Button>
+                                                            </ButtonGroup>
+                                                        </TableCell>
                                                     </TableRow>
                                                 }
                                             }).collect::<Vec<_>>(),
                     
                                             Some(Err(e)) => vec![view! {
+                                                <Show when=edit_card>
+                                                    <Overlay>
+                                                    <div class="feedback-card">
+                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
+                                                        </div>
+                                                    </Overlay>
+                                                    </Show>
                                                 <TableRow>
                                                     <TableCell >
                                                         {format!("Error: {}", e)}
@@ -308,6 +435,13 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                             }],
                     
                                             None => vec![view! {
+                                                <Show when=edit_card>
+                                                    <Overlay>
+                                                    <div class="feedback-card">
+                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
+                                                        </div>
+                                                    </Overlay>
+                                                    </Show>
                                                 <TableRow>
                                                     <TableCell >
                                                         "Loading..."
@@ -330,25 +464,56 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                         <TableHeaderCell>"Nume"</TableHeaderCell>
                                         <TableHeaderCell>"Adresa"</TableHeaderCell>
                                         <TableHeaderCell>"Banca"</TableHeaderCell>
+                                        <TableHeaderCell></TableHeaderCell>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                 {
                                     move || {
-
-                                        let sucursala_data = sucursale.read().as_ref().cloned();
-                                        match sucursala_data {
+                                        match sucursala_data.get() {
                                             Some(Ok(sucursale)) => sucursale.clone().into_iter().map(|sucursala| {
                                                 view! {
+                                                    <Show when=edit_card>
+                                                    <Overlay>
+                                                    <Card>
+        <CardHeader>
+            <Body1>
+                <b>"Edit"</b>
+            </Body1>
+            <CardHeaderDescription slot>
+                <Caption1>"Description"</Caption1>
+            </CardHeaderDescription>
+        </CardHeader>
+        <CardPreview>
+            <SucursalaEditor sucursala_id=sucursala.id on_feedback_succes=on_feedback_succes/>
+        </CardPreview>
+        
+    </Card>
+                                                        
+                                                    </Overlay>
+                                                    </Show>
                                                     <TableRow>
                                                         <TableCell>{sucursala.nume.clone()}</TableCell>
                                                         <TableCell>{sucursala.adresa.clone()}</TableCell>
                                                         <TableCell>{sucursala.banca_nume}</TableCell>
+                                                        <TableCell>
+                                                            <ButtonGroup>
+                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
+                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deletes(sucursala.id.clone())}>"Delete"</Button>
+                                                            </ButtonGroup>
+                                                        </TableCell>
                                                     </TableRow>
                                                 }
                                             }).collect::<Vec<_>>(),
                     
                                             Some(Err(e)) => vec![view! {
+                                                <Show when=edit_card>
+                                                    <Overlay>
+                                                    <div class="feedback-card">
+                                                        <SucursalaEditor sucursala_id=0 on_feedback_succes=on_feedback_succes/>
+                                                        </div>
+                                                    </Overlay>
+                                                    </Show>
                                                 <TableRow>
                                                     <TableCell >
                                                         {format!("Error: {}", e)}
@@ -357,6 +522,13 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                                             }],
                     
                                             None => vec![view! {
+                                                <Show when=edit_card>
+                                                <Overlay>
+                                                <div class="feedback-card">
+                                                    <SucursalaEditor sucursala_id=0 on_feedback_succes=on_feedback_succes/>
+                                                    </div>
+                                                </Overlay>
+                                                </Show>
                                                 <TableRow>
                                                     <TableCell >
                                                         "Loading..."
@@ -439,7 +611,6 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                 }
             }
         });
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",nume_sucursala.get(),input_adresa.get(), input_banca.get());
     };
 
     let submit_angajat = move |_event| {
@@ -495,6 +666,9 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
                     </Field>
                     <Field label="Prenume" name="prenume">
                         <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Telefon" name="telefon">
+                        <Input value=input_adresa />
                     </Field>
                     <Field label="Banca" name="combobox">
                         <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
@@ -584,3 +758,160 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
 }
 
 
+#[component]
+pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
+    let nume = RwSignal::new(String::from(""));
+    let prenume = RwSignal::new(String::from(""));
+    let banca = RwSignal::new(String::from(""));
+    let nume_sucursala = RwSignal::new(String::from(""));
+    let input_nume = RwSignal::new(String::from(""));
+    let input_prenume = RwSignal::new(String::from(""));
+    let input_adresa = RwSignal::new(String::from(""));
+    let input_banca = RwSignal::new(String::from(""));
+    let submit_angajat = move |event| {
+
+        // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
+        spawn_local(async move {
+            edit_angajat(angajat_id, Some(input_nume.get()), Some(input_prenume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
+            on_feedback_succes(event);
+        });
+    };
+    let banci = OnceResource::new(get_banci());
+
+                                    view!{
+                                        <FieldContextProvider>
+                    <Field label="Nume" name="nume">
+                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Prenume" name="prenume">
+                        <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
+                    </Field>
+                    <Field label="Telefon" name="telefon">
+                        <Input value=input_adresa />
+                    </Field>
+                    <Field label="Banca" name="combobox">
+                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
+                        { 
+                            // Map over the banca_data and return the combobox options directly
+                            let banca_data = match banci.read().as_ref() {
+                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                Some(Err(e)) => {
+                                    // Handle the error case, for example log the error or return a default value
+                                    log::error!("Error fetching banci: {:?}", e);
+                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                }
+                                None => {
+                                    // Handle the None case, for example log the issue or return a default value
+                                    log::error!("No data found for banci");
+                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                }
+                            };
+                            banca_data.iter().map(|banca| {
+                                view! {
+                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
+                                }
+                            }).collect::<Vec<_>>() // Collect the views into a Vec
+                        }
+                        </Combobox>
+                    </Field>
+                    <div style="margin-top: 8px">
+                        <button on:click=submit_angajat>
+                            "Submit"
+                        </button>
+                    </div>
+            </FieldContextProvider>
+}
+}
+
+#[component]
+pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
+    let nume = RwSignal::new(String::from(""));
+    let prenume = RwSignal::new(String::from(""));
+    let banca = RwSignal::new(String::from(""));
+    let input_nume = RwSignal::new(String::from(""));
+    let input_adresa = RwSignal::new(String::from(""));
+    let input_banca = RwSignal::new(String::from(""));
+    let submit_sucursala = move |event| {
+
+        // use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
+        spawn_local(async move {
+            let _ =edit_sucursala(sucursala_id, Some(input_nume.get()), Some(input_adresa.get()), Some(input_banca.get())).await;
+            on_feedback_succes(event);
+        });
+    };
+    let banci = OnceResource::new(get_banci());
+
+                                    view!{
+                                        <FieldContextProvider>
+                                        <Field label="Nume" name="adresa">
+                                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                                    </Field>
+                                    <Field label="Adresa" name="adresa">
+                                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                                    </Field>
+                                    <Field label="Banca" name="combobox">
+                                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
+                                        { 
+                                            // Map over the banca_data and return the combobox options directly
+                                            let banca_data = match banci.read().as_ref() {
+                                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                                Some(Err(e)) => {
+                                                    // Handle the error case, for example log the error or return a default value
+                                                    log::error!("Error fetching banci: {:?}", e);
+                                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                                }
+                                                None => {
+                                                    // Handle the None case, for example log the issue or return a default value
+                                                    log::error!("No data found for banci");
+                                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                                }
+                                            };
+                                            banca_data.iter().map(|banca| {
+                                                view! {
+                                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
+                                                }
+                                            }).collect::<Vec<_>>() // Collect the views into a Vec
+                                        }
+                                        </Combobox>
+                                    </Field>
+                                    <div style="margin-top: 8px">
+                                        <button on:click=submit_sucursala>
+                                            "Submit"
+                                        </button>
+                                    </div>
+            </FieldContextProvider>
+}
+}
+
+#[component]
+pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
+
+    let input_nume = RwSignal::new(String::from(""));
+    let input_adresa = RwSignal::new(String::from(""));
+
+    let submit_banca = move |event| {
+        spawn_local(async move {
+            let _ =edit_banca(banca_id, Some(input_nume.get()), Some(input_adresa.get())).await;
+            on_feedback_succes(event);
+        });
+        
+    };
+
+                                    view!{
+                                        <FieldContextProvider>
+                                        <Field label="Nume" name="nume">
+                                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                                    </Field>
+                                    <Field label="Adresa" name="adresa">
+                                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                                    </Field>
+                                    <div style="margin-top: 8px">
+                                        <button on:click=submit_banca>
+                                            "Submit"
+                                        </button>
+                                    </div>
+            </FieldContextProvider>
+                                       
+}
+}
+         
