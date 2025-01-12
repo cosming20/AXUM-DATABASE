@@ -1,6 +1,7 @@
 need to install rust, last version of cargo leptos 0.2.24 was bindgen 0.2.99
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
 rustup toolchain install nightly
 rustup target add wasm32-unknown-unknown
 cargo install cargo-leptos --version 0.2.24
