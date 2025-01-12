@@ -1,5 +1,5 @@
 use crate::api::*;
-use leptos::{html::Div, task::spawn_local};
+use leptos::task::spawn_local;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -8,7 +8,6 @@ use leptos_router::{
 };
 use thaw::*;
 use web_sys::MouseEvent;
-use leptos_use::on_click_outside;
 
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -16,14 +15,14 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
         <!DOCTYPE html>
         <html lang="en">
             <head>
-                <meta charset="utf-8"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <AutoReload options=options.clone() />
-                <HydrationScripts options/>
-                <MetaTags/>
+                <HydrationScripts options />
+                <MetaTags />
             </head>
             <body>
-                <App/>
+                <App />
             </body>
         </html>
     }
@@ -31,29 +30,24 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 
 #[component]
 pub fn App() -> impl IntoView {
-    // Provides context that manages stylesheets, titles, meta tags, etc.
+
     provide_meta_context();
 
     view! {
         <ConfigProvider>
-        <ToasterProvider>
-        // injects a stylesheet into the document <head>
-        // id=leptos means cargo-leptos will hot-reload this stylesheet
-        <Stylesheet id="leptos" href="/pkg/{{project-name}}.css"/>
+            <ToasterProvider>
+                <Stylesheet id="leptos" href="/pkg/{{project-name}}.css" />
 
-        // sets the document title
-        <Title text="Welcome to Leptos"/>
-
-        // content for this welcome page
-        <Router>
-            <main>
-                <Routes fallback=|| "Page not found.".into_view()>
-                    <Route path=StaticSegment("") view=HomePage/>
-                    <Route path=StaticSegment("/table") view=MainPage/>
-                </Routes>
-            </main>
-        </Router>
-        </ToasterProvider>
+                <Title text="Leptos PIBD" />
+                <Router>
+                    <main>
+                        <Routes fallback=|| "Page not found.".into_view()>
+                            <Route path=StaticSegment("") view=HomePage />
+                            <Route path=StaticSegment("/table") view=MainPage />
+                        </Routes>
+                    </main>
+                </Router>
+            </ToasterProvider>
         </ConfigProvider>
     }
 }
@@ -62,9 +56,7 @@ pub fn App() -> impl IntoView {
 #[component]
 fn HomePage() -> impl IntoView {
     
-    view! {
-        <h1>"Welcome to Leptos!"</h1>
-    }
+    view! { <h1>"Welcome to Leptos!"</h1> }
 }
 
 #[derive(Clone, PartialEq)]
@@ -81,6 +73,17 @@ pub enum TableStateEditor {
     Angajati,
     Banci,
     Sucursale,
+}
+
+fn dispatch_toast(toaster: ToasterInjection, intent: ToastIntent) {
+    toaster.dispatch_toast(move || view! {
+        <Toast>
+            <ToastTitle>"Data saved"</ToastTitle>
+            <ToastBody>
+                "Data saved successfully"
+            </ToastBody>
+        </Toast>
+     }, ToastOptions::default().with_intent(intent));
 }
 
 #[component]
@@ -130,15 +133,15 @@ fn MainPage() -> impl IntoView {
 
 
     view! {
-            <Layout has_sider=true>
+        <Layout has_sider=true>
             <LayoutSider attr:style="background-color: #white; padding: 20px;">
                 <NavComponent
-                        on_click_angajati=on_click_angajati
-                        on_click_banci=on_click_banci
-                        on_click_sucursale=on_click_sucursale
-                        on_click_angajati2=on_click_angajati2
-                        on_click_banci2=on_click_banci2
-                        on_click_sucursale2=on_click_sucursale2
+                    on_click_angajati=on_click_angajati
+                    on_click_banci=on_click_banci
+                    on_click_sucursale=on_click_sucursale
+                    on_click_angajati2=on_click_angajati2
+                    on_click_banci2=on_click_banci2
+                    on_click_sucursale2=on_click_sucursale2
                 />
             </LayoutSider>
             <Layout>
@@ -147,15 +150,14 @@ fn MainPage() -> impl IntoView {
                 </LayoutHeader>
                 <Layout attr:style="background-color: #white; padding: 20px;">
                     <Show when=viewer>
-                    <Tables table_state=table_state.get()/>
+                        <Tables table_state=table_state.get() />
                     </Show>
                     <Show when=editor>
-                    <Editor table_state_editor=table_state_editor.get()/>
+                        <Editor table_state_editor=table_state_editor.get() />
                     </Show>
                 </Layout>
             </Layout>
         </Layout>
-
     }
 }
 #[component]
@@ -170,7 +172,7 @@ pub fn NavComponent(
     view! {
         <NavDrawer>
             <NavCategory value="table">
-                <NavCategoryItem  slot icon=icondata::AiTableOutlined>
+                <NavCategoryItem slot icon=icondata::AiTableOutlined>
                     "View data"
                 </NavCategoryItem>
                 <NavSubItem on:click=on_click_angajati value="target">
@@ -237,7 +239,7 @@ pub fn Overlay(#[prop(optional, into)] class: Signal<String>, children: Children
 pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
     let (delete_signal, set_delete) = signal(false);
     let angajati_data = Resource::new(move || delete_signal.get(),|_| get_angajati());
-    let banci = OnceResource::new(get_banci());
+    let banci = Resource::new(move || delete_signal.get(),|_| get_banci());
     let sucursala_data = Resource::new(move || delete_signal.get(), |_| get_sucursale());
     
     let (edit_card, set_edit_card) = signal(false);
@@ -290,268 +292,345 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
                         TableState::Angajati => {
                             view! {
                                 <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHeaderCell>"Nume"</TableHeaderCell>
-                                        <TableHeaderCell>"Prenume"</TableHeaderCell>
-                                        <TableHeaderCell>"Telefon"</TableHeaderCell>
-                                        <TableHeaderCell>"Banca ID"</TableHeaderCell>
-                                        <TableHeaderCell></TableHeaderCell>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                {            {move || {
-                                    match angajati_data.get() {
-                                        Some(Ok(angajati)) => {
-                                            angajati.into_iter().map(|angajat| {
-                                                view! {
-                                                    <Show when=edit_card>
-                                                    <Overlay>
-                                                    <Card>
-        <CardHeader>
-            <Body1>
-                <b>"Edit"</b>
-            </Body1>
-            <CardHeaderDescription slot>
-                <Caption1>"Description"</Caption1>
-            </CardHeaderDescription>
-        </CardHeader>
-        <CardPreview>
-            <AngajatEditor angajat_id=angajat.id on_feedback_succes=on_feedback_succes/>
-        </CardPreview>
-        
-    </Card>
-                                                        
-                                                    </Overlay>
-                                                    </Show>
-                                                    <TableRow>
-                                                        <TableCell>{angajat.nume.clone()}</TableCell>
-                                                        <TableCell>{angajat.prenume.clone()}</TableCell>
-                                                        <TableCell>{angajat.telefon.clone()}</TableCell>
-                                                        <TableCell>{angajat.banca_nume}</TableCell>
-                                                        <TableCell>
-                                                            <ButtonGroup>
-                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
-                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deletea(angajat.id.clone())}>"Delete"</Button>
-                                                            </ButtonGroup>
-                                                        </TableCell>
-                                                    </TableRow>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHeaderCell>"Nume"</TableHeaderCell>
+                                            <TableHeaderCell>"Prenume"</TableHeaderCell>
+                                            <TableHeaderCell>"Telefon"</TableHeaderCell>
+                                            <TableHeaderCell>"Banca ID"</TableHeaderCell>
+                                            <TableHeaderCell></TableHeaderCell>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {{
+                                            move || {
+                                                match angajati_data.get() {
+                                                    Some(Ok(angajati)) => {
+                                                        angajati
+                                                            .into_iter()
+                                                            .map(|angajat| {
+                                                                view! {
+                                                                    <Show when=edit_card>
+                                                                        <Overlay>
+                                                                            <Card>
+                                                                                <CardHeader>
+                                                                                    <Body1>
+                                                                                        <b>"Edit"</b>
+                                                                                    </Body1>
+                                                                                    <CardHeaderDescription slot>
+                                                                                        <Caption1>"Description"</Caption1>
+                                                                                    </CardHeaderDescription>
+                                                                                </CardHeader>
+                                                                                <CardPreview>
+                                                                                    <AngajatEditor
+                                                                                        angajat_id=angajat.id
+                                                                                        on_feedback_succes=on_feedback_succes
+                                                                                    />
+                                                                                </CardPreview>
+
+                                                                            </Card>
+
+                                                                        </Overlay>
+                                                                    </Show>
+                                                                    <TableRow>
+                                                                        <TableCell>{angajat.nume.clone()}</TableCell>
+                                                                        <TableCell>{angajat.prenume.clone()}</TableCell>
+                                                                        <TableCell>{angajat.telefon.clone()}</TableCell>
+                                                                        <TableCell>{angajat.banca_nume}</TableCell>
+                                                                        <TableCell>
+                                                                            <ButtonGroup>
+                                                                                <Button icon=icondata::AiEditOutlined on_click=edit>
+                                                                                    "Edit"
+                                                                                </Button>
+                                                                                <Button
+                                                                                    icon=icondata::AiDeleteOutlined
+                                                                                    on_click=move |_| deletea(angajat.id.clone())
+                                                                                >
+                                                                                    "Delete"
+                                                                                </Button>
+                                                                            </ButtonGroup>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                }
+                                                            })
+                                                            .collect::<Vec<_>>()
+                                                    }
+                                                    Some(Err(_e)) => {
+                                                        vec![
+                                                            view! {
+                                                                <Show when=edit_card>
+                                                                    <Overlay>
+                                                                        <AngajatEditor
+                                                                            angajat_id=0
+                                                                            on_feedback_succes=on_feedback_succes
+                                                                        />
+                                                                    </Overlay>
+                                                                </Show>
+                                                                <TableRow>
+                                                                    <TableCell>"Error: {e}"</TableCell>
+                                                                </TableRow>
+                                                            },
+                                                        ]
+                                                    }
+                                                    None => {
+                                                        vec![
+                                                            view! {
+                                                                <Show when=edit_card>
+                                                                    <Overlay>
+                                                                        <div class="feedback-card">
+                                                                            <AngajatEditor
+                                                                                angajat_id=0
+                                                                                on_feedback_succes=on_feedback_succes
+                                                                            />
+                                                                        </div>
+                                                                    </Overlay>
+                                                                </Show>
+                                                                <TableRow>
+                                                                    <TableCell>"Loading..."</TableCell>
+                                                                </TableRow>
+                                                            },
+                                                        ]
+                                                    }
                                                 }
-                                            }).collect::<Vec<_>>()
-                                        }
-                                        Some(Err(_e)) => vec![view! {
-                                            <Show when=edit_card>
-                                                    <Overlay>
-                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
-                                                    </Overlay>
-                                                    </Show>
-                                            <TableRow>
-                                                <TableCell>"Error: {e}"</TableCell>
-                                            </TableRow>
-                                        }],
-                                        None => vec![view! {
-                                            <Show when=edit_card>
-                                                    <Overlay>
-                                                    <div class="feedback-card">
-                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
-                                                        </div>
-                                                    </Overlay>
-                                                    </Show>
-                                            <TableRow>
-                                                <TableCell>"Loading..."</TableCell>
-                                            </TableRow>
-                                        }],
-                                    }
-                                }}
-                                }
-                                </TableBody>
-                            </Table>
+                                            }
+                                        }}
+                                    </TableBody>
+                                </Table>
                             }
                         }
                         TableState::Banci => {
 
                             view! {
                                 <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHeaderCell>"Nume"</TableHeaderCell>
-                                        <TableHeaderCell>"Adresa"</TableHeaderCell>
-                                        <TableHeaderCell></TableHeaderCell>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                {
-                                    move || {
-                                  
-                                        let banca_data = banci.read().as_ref().cloned();
-                                        match banca_data {
-                                            Some(Ok(banci)) => banci.clone().into_iter().map(|banca| {
-                                                view! {
-                                                    <Show when=edit_card>
-                                                    <Overlay>
-                                                    <Card>
-        <CardHeader>
-            <Body1>
-                <b>"Edit"</b>
-            </Body1>
-            <CardHeaderDescription slot>
-                <Caption1>"Description"</Caption1>
-            </CardHeaderDescription>
-        </CardHeader>
-        <CardPreview>
-            <BancaEditor banca_id=banca.id on_feedback_succes=on_feedback_succes/>
-        </CardPreview>
-        
-    </Card>
-                                                        
-                                                    </Overlay>
-                                                    </Show>
-                                                    <TableRow>
-                                                        <TableCell>{banca.nume.clone()}</TableCell>
-                                                        <TableCell>{banca.adresa.clone()}</TableCell>
-                                                        <TableCell>
-                                                            <ButtonGroup>
-                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
-                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deleteb(banca.id.clone())}>"Delete"</Button>
-                                                            </ButtonGroup>
-                                                        </TableCell>
-                                                    </TableRow>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHeaderCell>"Nume"</TableHeaderCell>
+                                            <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                            <TableHeaderCell></TableHeaderCell>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {move || {
+                                            let banca_data = banci.read().as_ref().cloned();
+                                            match banca_data {
+                                                Some(Ok(banci)) => {
+                                                    banci
+                                                        .clone()
+                                                        .into_iter()
+                                                        .map(|banca| {
+
+                                                            view! {
+                                                                <Show when=edit_card>
+                                                                    <Overlay>
+                                                                        <Card>
+                                                                            <CardHeader>
+                                                                                <Body1>
+                                                                                    <b>"Edit"</b>
+                                                                                </Body1>
+                                                                                <CardHeaderDescription slot>
+                                                                                    <Caption1>"Description"</Caption1>
+                                                                                </CardHeaderDescription>
+                                                                            </CardHeader>
+                                                                            <CardPreview>
+                                                                                <BancaEditor
+                                                                                    banca_id=banca.id
+                                                                                    on_feedback_succes=on_feedback_succes
+                                                                                />
+                                                                            </CardPreview>
+
+                                                                        </Card>
+
+                                                                    </Overlay>
+                                                                </Show>
+                                                                <TableRow>
+                                                                    <TableCell>{banca.nume.clone()}</TableCell>
+                                                                    <TableCell>{banca.adresa.clone()}</TableCell>
+                                                                    <TableCell>
+                                                                        <ButtonGroup>
+                                                                            <Button icon=icondata::AiEditOutlined on_click=edit>
+                                                                                "Edit"
+                                                                            </Button>
+                                                                            <Button
+                                                                                icon=icondata::AiDeleteOutlined
+                                                                                on_click=move |_| deleteb(banca.id.clone())
+                                                                            >
+                                                                                "Delete"
+                                                                            </Button>
+                                                                        </ButtonGroup>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            }
+                                                        })
+                                                        .collect::<Vec<_>>()
                                                 }
-                                            }).collect::<Vec<_>>(),
-                    
-                                            Some(Err(e)) => vec![view! {
-                                                <Show when=edit_card>
-                                                    <Overlay>
-                                                    <div class="feedback-card">
-                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
-                                                        </div>
-                                                    </Overlay>
-                                                    </Show>
-                                                <TableRow>
-                                                    <TableCell >
-                                                        {format!("Error: {}", e)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            }],
-                    
-                                            None => vec![view! {
-                                                <Show when=edit_card>
-                                                    <Overlay>
-                                                    <div class="feedback-card">
-                                                        <AngajatEditor angajat_id=0 on_feedback_succes=on_feedback_succes/>
-                                                        </div>
-                                                    </Overlay>
-                                                    </Show>
-                                                <TableRow>
-                                                    <TableCell >
-                                                        "Loading..."
-                                                    </TableCell>
-                                                </TableRow>
-                                            }],
-                                        }
-                                    }
-                                }
-                                </TableBody>
-                            </Table>
+                                                Some(Err(e)) => {
+                                                    vec![
+
+                                                        view! {
+                                                            <Show when=edit_card>
+                                                                <Overlay>
+                                                                    <div class="feedback-card">
+                                                                        <AngajatEditor
+                                                                            angajat_id=0
+                                                                            on_feedback_succes=on_feedback_succes
+                                                                        />
+                                                                    </div>
+                                                                </Overlay>
+                                                            </Show>
+                                                            <TableRow>
+                                                                <TableCell>{format!("Error: {}", e)}</TableCell>
+                                                            </TableRow>
+                                                        },
+                                                    ]
+                                                }
+                                                None => {
+                                                    vec![
+
+                                                        view! {
+                                                            <Show when=edit_card>
+                                                                <Overlay>
+                                                                    <div class="feedback-card">
+                                                                        <AngajatEditor
+                                                                            angajat_id=0
+                                                                            on_feedback_succes=on_feedback_succes
+                                                                        />
+                                                                    </div>
+                                                                </Overlay>
+                                                            </Show>
+                                                            <TableRow>
+                                                                <TableCell>"Loading..."</TableCell>
+                                                            </TableRow>
+                                                        },
+                                                    ]
+                                                }
+                                            }
+                                        }}
+                                    </TableBody>
+                                </Table>
                             }
                         }
                         TableState::Sucursale => {
-                            
+
                             view! {
                                 <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHeaderCell>"Nume"</TableHeaderCell>
-                                        <TableHeaderCell>"Adresa"</TableHeaderCell>
-                                        <TableHeaderCell>"Banca"</TableHeaderCell>
-                                        <TableHeaderCell></TableHeaderCell>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                {
-                                    move || {
-                                        match sucursala_data.get() {
-                                            Some(Ok(sucursale)) => sucursale.clone().into_iter().map(|sucursala| {
-                                                view! {
-                                                    <Show when=edit_card>
-                                                    <Overlay>
-                                                    <Card>
-        <CardHeader>
-            <Body1>
-                <b>"Edit"</b>
-            </Body1>
-            <CardHeaderDescription slot>
-                <Caption1>"Description"</Caption1>
-            </CardHeaderDescription>
-        </CardHeader>
-        <CardPreview>
-            <SucursalaEditor sucursala_id=sucursala.id on_feedback_succes=on_feedback_succes/>
-        </CardPreview>
-        
-    </Card>
-                                                        
-                                                    </Overlay>
-                                                    </Show>
-                                                    <TableRow>
-                                                        <TableCell>{sucursala.nume.clone()}</TableCell>
-                                                        <TableCell>{sucursala.adresa.clone()}</TableCell>
-                                                        <TableCell>{sucursala.banca_nume}</TableCell>
-                                                        <TableCell>
-                                                            <ButtonGroup>
-                                                                <Button icon=icondata::AiEditOutlined on_click=edit>"Edit"</Button>
-                                                                <Button icon=icondata::AiDeleteOutlined on_click={move |_| deletes(sucursala.id.clone())}>"Delete"</Button>
-                                                            </ButtonGroup>
-                                                        </TableCell>
-                                                    </TableRow>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHeaderCell>"Nume"</TableHeaderCell>
+                                            <TableHeaderCell>"Adresa"</TableHeaderCell>
+                                            <TableHeaderCell>"Banca"</TableHeaderCell>
+                                            <TableHeaderCell></TableHeaderCell>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {move || {
+                                            match sucursala_data.get() {
+                                                Some(Ok(sucursale)) => {
+                                                    sucursale
+                                                        .clone()
+                                                        .into_iter()
+                                                        .map(|sucursala| {
+                                                            view! {
+                                                                <Show when=edit_card>
+                                                                    <Overlay>
+                                                                        <Card>
+                                                                            <CardHeader>
+                                                                                <Body1>
+                                                                                    <b>"Edit"</b>
+                                                                                </Body1>
+                                                                                <CardHeaderDescription slot>
+                                                                                    <Caption1>"Description"</Caption1>
+                                                                                </CardHeaderDescription>
+                                                                            </CardHeader>
+                                                                            <CardPreview>
+                                                                                <SucursalaEditor
+                                                                                    sucursala_id=sucursala.id
+                                                                                    on_feedback_succes=on_feedback_succes
+                                                                                />
+                                                                            </CardPreview>
+
+                                                                        </Card>
+
+                                                                    </Overlay>
+                                                                </Show>
+                                                                <TableRow>
+                                                                    <TableCell>{sucursala.nume.clone()}</TableCell>
+                                                                    <TableCell>{sucursala.adresa.clone()}</TableCell>
+                                                                    <TableCell>{sucursala.banca_nume}</TableCell>
+                                                                    <TableCell>
+                                                                        <ButtonGroup>
+                                                                            <Button icon=icondata::AiEditOutlined on_click=edit>
+                                                                                "Edit"
+                                                                            </Button>
+                                                                            <Button
+                                                                                icon=icondata::AiDeleteOutlined
+                                                                                on_click=move |_| deletes(sucursala.id.clone())
+                                                                            >
+                                                                                "Delete"
+                                                                            </Button>
+                                                                        </ButtonGroup>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            }
+                                                        })
+                                                        .collect::<Vec<_>>()
                                                 }
-                                            }).collect::<Vec<_>>(),
-                    
-                                            Some(Err(e)) => vec![view! {
-                                                <Show when=edit_card>
-                                                    <Overlay>
-                                                    <div class="feedback-card">
-                                                        <SucursalaEditor sucursala_id=0 on_feedback_succes=on_feedback_succes/>
-                                                        </div>
-                                                    </Overlay>
-                                                    </Show>
-                                                <TableRow>
-                                                    <TableCell >
-                                                        {format!("Error: {}", e)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            }],
-                    
-                                            None => vec![view! {
-                                                <Show when=edit_card>
-                                                <Overlay>
-                                                <div class="feedback-card">
-                                                    <SucursalaEditor sucursala_id=0 on_feedback_succes=on_feedback_succes/>
-                                                    </div>
-                                                </Overlay>
-                                                </Show>
-                                                <TableRow>
-                                                    <TableCell >
-                                                        "Loading..."
-                                                    </TableCell>
-                                                </TableRow>
-                                            }],
-                                        }
-                                    }
-                                }
-                                </TableBody>
-                            </Table>
+                                                Some(Err(e)) => {
+                                                    vec![
+
+                                                        view! {
+                                                            <Show when=edit_card>
+                                                                <Overlay>
+                                                                    <div class="feedback-card">
+                                                                        <SucursalaEditor
+                                                                            sucursala_id=0
+                                                                            on_feedback_succes=on_feedback_succes
+                                                                        />
+                                                                    </div>
+                                                                </Overlay>
+                                                            </Show>
+                                                            <TableRow>
+                                                                <TableCell>{format!("Error: {}", e)}</TableCell>
+                                                            </TableRow>
+                                                        },
+                                                    ]
+                                                }
+                                                None => {
+                                                    vec![
+
+                                                        view! {
+                                                            <Show when=edit_card>
+                                                                <Overlay>
+                                                                    <div class="feedback-card">
+                                                                        <SucursalaEditor
+                                                                            sucursala_id=0
+                                                                            on_feedback_succes=on_feedback_succes
+                                                                        />
+                                                                    </div>
+                                                                </Overlay>
+                                                            </Show>
+                                                            <TableRow>
+                                                                <TableCell>"Loading..."</TableCell>
+                                                            </TableRow>
+                                                        },
+                                                    ]
+                                                }
+                                            }
+                                        }}
+                                    </TableBody>
+                                </Table>
                             }
                         }
                         TableState::Hidden => {
-                            // Handle the case for Hidden
                             view! {
                                 <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHeaderCell>"Here you can see the content of the tables"</TableHeaderCell>
-            </TableRow>
-        </TableHeader>
-    </Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHeaderCell>
+                                                "Here you can see the content of the tables"
+                                            </TableHeaderCell>
+                                        </TableRow>
+                                    </TableHeader>
+                                </Table>
                             }
                         }
                     }
@@ -563,6 +642,9 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
 
 #[component]
 pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl IntoView {
+
+
+    let toaster = ToasterInjection::expect_context();
     let nume = RwSignal::new(String::from(""));
     let prenume = RwSignal::new(String::from(""));
     let banca = RwSignal::new(String::from(""));
@@ -572,7 +654,6 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
     let input_adresa = RwSignal::new(String::from(""));
     let input_banca = RwSignal::new(String::from(""));
     let current_state = table_state_editor.get();
-    leptos::logging::log!("giani{:?}", current_state);
     let submit_banca = move |_event| {
         
         let nume_banca_value = input_nume.get().clone();
@@ -581,16 +662,14 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
         spawn_local(async move {
             match create_banca(nume_banca_value, adresa_banca_value).await {
                 Ok(banca) => {
-                    // Handle successful creation of banca
+                    dispatch_toast(toaster, ToastIntent::Success);
                     log::info!("Banca creată: {:?}", banca);
                 }
                 Err(e) => {
-                    // Handle error
                     log::error!("Eroare la crearea băncii: {:?}", e);
                 }
             }
         });
-        leptos::logging::log!("feeedbackkss{:?} si value ala {:?} si babca {:?}",input_nume.get(),input_adresa.get(), input_banca.get());
     };
 
     let submit_sucursala = move |_event| {
@@ -602,11 +681,10 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
         spawn_local(async move {
             match create_sucursala(nume_sucursala_value, adresa_sucursala_value, input_banca.get()).await {
                 Ok(sucursala) => {
-                    // Handle successful creation of sucursala
+                    dispatch_toast(toaster, ToastIntent::Success);
                     log::info!("Sucursala creată: {:?}", sucursala);
                 }
                 Err(e) => {
-                    // Handle error
                     log::error!("Eroare la crearea sucursalei: {:?}", e);
                 }
             }
@@ -619,15 +697,14 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
         let prenume_angajat_value = input_prenume.get().clone();
         let telefon_angajat_value = input_adresa.get().clone();
 
-        use crate::api::create_angajat; // Asigură-te că ai o funcție create_angajat în API
+        use crate::api::create_angajat;
         spawn_local(async move {
             match create_angajat(nume_angajat_value, prenume_angajat_value, telefon_angajat_value, input_banca.get()).await {
                 Ok(angajat) => {
-                    // Handle successful creation of angajat
+                    dispatch_toast(toaster, ToastIntent::Success);
                     log::info!("Angajat creat: {:?}", angajat);
                 }
                 Err(e) => {
-                    // Handle error
                     log::error!("Eroare la crearea angajatului: {:?}", e);
                 }
             }
@@ -661,99 +738,108 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
     view! {
         <FieldContextProvider>
             <Show when=angajat>
-                    <Field label="Nume" name="nume">
-                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Prenume" name="prenume">
-                        <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Telefon" name="telefon">
-                        <Input value=input_adresa />
-                    </Field>
-                    <Field label="Banca" name="combobox">
-                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
-                        { 
-                            // Map over the banca_data and return the combobox options directly
+                <Field label="Nume" name="nume">
+                    <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                </Field>
+                <Field label="Prenume" name="prenume">
+                    <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
+                </Field>
+                <Field label="Telefon" name="telefon">
+                    <Input value=input_adresa />
+                </Field>
+                <Field label="Banca" name="combobox">
+                    <Combobox
+                        value=input_banca
+                        rules=vec![ComboboxRule::required(true.into())]
+                        placeholder="Banca"
+                        clearable=true
+                    >
+                        {
                             let banca_data = match banci.read().as_ref() {
-                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                Some(Ok(data)) => data.clone(),
                                 Some(Err(e)) => {
-                                    // Handle the error case, for example log the error or return a default value
                                     log::error!("Error fetching banci: {:?}", e);
-                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                    Vec::new()
                                 }
                                 None => {
-                                    // Handle the None case, for example log the issue or return a default value
                                     log::error!("No data found for banci");
-                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                    Vec::new()
                                 }
                             };
-                            banca_data.iter().map(|banca| {
-                                view! {
-                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
-                                }
-                            }).collect::<Vec<_>>() // Collect the views into a Vec
+                            banca_data
+                                .iter()
+                                .map(|banca| {
+                                    view! {
+                                        <ComboboxOption
+                                            value=banca.id.to_string()
+                                            text=banca.nume.clone()
+                                        />
+                                    }
+                                })
+                                .collect::<Vec<_>>()
                         }
-                        </Combobox>
-                    </Field>
-                    <div style="margin-top: 8px">
-                        <button on:click=submit_angajat>
-                            "Submit"
-                        </button>
-                    </div>
+                    </Combobox>
+                </Field>
+                <div style="margin-top: 8px">
+                    <button on:click=submit_angajat>"Submit"</button>
+                </div>
             </Show>
             <Show when=bancaview>
-                    <Field label="Nume" name="nume">
-                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Adresa" name="adresa">
-                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <div style="margin-top: 8px">
-                        <button on:click=submit_banca>
-                            "Submit"
-                        </button>
-                    </div>
+                <Field label="Nume" name="nume">
+                    <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                </Field>
+                <Field label="Adresa" name="adresa">
+                    <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                </Field>
+                <div style="margin-top: 8px">
+                    <button on:click=submit_banca>"Submit"</button>
+                </div>
             </Show>
             <Show when=sucursalaview>
-                    <Field label="Nume" name="adresa">
-                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Adresa" name="adresa">
-                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Banca" name="combobox">
-                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
-                        { 
-                            // Map over the banca_data and return the combobox options directly
+                <Field label="Nume" name="adresa">
+                    <Input value=input_nume rules=vec![InputRule::required(true.into())] />
+                </Field>
+                <Field label="Adresa" name="adresa">
+                    <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
+                </Field>
+                <Field label="Banca" name="combobox">
+                    <Combobox
+                        value=input_banca
+                        rules=vec![ComboboxRule::required(true.into())]
+                        placeholder="Banca"
+                        clearable=true
+                    >
+                        {
                             let banca_data = match banci.read().as_ref() {
-                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
+                                Some(Ok(data)) => data.clone(),
                                 Some(Err(e)) => {
-                                    // Handle the error case, for example log the error or return a default value
                                     log::error!("Error fetching banci: {:?}", e);
-                                    Vec::new() // Return an empty Vec<Banca> in case of error
+                                    Vec::new()
                                 }
                                 None => {
-                                    // Handle the None case, for example log the issue or return a default value
                                     log::error!("No data found for banci");
-                                    Vec::new() // Return an empty Vec<Banca> in case of None
+                                    Vec::new()
                                 }
                             };
-                            banca_data.iter().map(|banca| {
-                                view! {
-                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
-                                }
-                            }).collect::<Vec<_>>() // Collect the views into a Vec
+                            banca_data
+                                .iter()
+                                .map(|banca| {
+                                    view! {
+                                        <ComboboxOption
+                                            value=banca.id.to_string()
+                                            text=banca.nume.clone()
+                                        />
+                                    }
+                                })
+                                .collect::<Vec<_>>()
                         }
-                        </Combobox>
-                    </Field>
-                    <div style="margin-top: 8px">
-                        <button on:click=submit_sucursala>
-                            "Submit"
-                        </button>
-                    </div>
+                    </Combobox>
+                </Field>
+                <div style="margin-top: 8px">
+                    <button on:click=submit_sucursala>"Submit"</button>
+                </div>
             </Show>
-            </FieldContextProvider>
-        
+        </FieldContextProvider>
     }
 }
 
@@ -778,49 +864,61 @@ pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes
     };
     let banci = OnceResource::new(get_banci());
 
-                                    view!{
+                                    view! {
                                         <FieldContextProvider>
-                    <Field label="Nume" name="nume">
-                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Prenume" name="prenume">
-                        <Input value=input_prenume rules=vec![InputRule::required(true.into())] />
-                    </Field>
-                    <Field label="Telefon" name="telefon">
-                        <Input value=input_adresa />
-                    </Field>
-                    <Field label="Banca" name="combobox">
-                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
-                        { 
-                            // Map over the banca_data and return the combobox options directly
-                            let banca_data = match banci.read().as_ref() {
-                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
-                                Some(Err(e)) => {
-                                    // Handle the error case, for example log the error or return a default value
-                                    log::error!("Error fetching banci: {:?}", e);
-                                    Vec::new() // Return an empty Vec<Banca> in case of error
-                                }
-                                None => {
-                                    // Handle the None case, for example log the issue or return a default value
-                                    log::error!("No data found for banci");
-                                    Vec::new() // Return an empty Vec<Banca> in case of None
-                                }
-                            };
-                            banca_data.iter().map(|banca| {
-                                view! {
-                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
-                                }
-                            }).collect::<Vec<_>>() // Collect the views into a Vec
-                        }
-                        </Combobox>
-                    </Field>
-                    <div style="margin-top: 8px">
-                        <button on:click=submit_angajat>
-                            "Submit"
-                        </button>
-                    </div>
-            </FieldContextProvider>
-}
+                                            <Field label="Nume" name="nume">
+                                                <Input
+                                                    value=input_nume
+                                                    rules=vec![InputRule::required(true.into())]
+                                                />
+                                            </Field>
+                                            <Field label="Prenume" name="prenume">
+                                                <Input
+                                                    value=input_prenume
+                                                    rules=vec![InputRule::required(true.into())]
+                                                />
+                                            </Field>
+                                            <Field label="Telefon" name="telefon">
+                                                <Input value=input_adresa />
+                                            </Field>
+                                            <Field label="Banca" name="combobox">
+                                                <Combobox
+                                                    value=input_banca
+                                                    rules=vec![ComboboxRule::required(true.into())]
+                                                    placeholder="Banca"
+                                                    clearable=true
+                                                >
+                                                    {
+                                                        let banca_data = match banci.read().as_ref() {
+                                                            Some(Ok(data)) => data.clone(),
+                                                            Some(Err(e)) => {
+                                                                log::error!("Error fetching banci: {:?}", e);
+                                                                Vec::new()
+                                                            }
+                                                            None => {
+                                                                log::error!("No data found for banci");
+                                                                Vec::new()
+                                                            }
+                                                        };
+                                                        banca_data
+                                                            .iter()
+                                                            .map(|banca| {
+                                                                view! {
+                                                                    <ComboboxOption
+                                                                        value=banca.id.to_string()
+                                                                        text=banca.nume.clone()
+                                                                    />
+                                                                }
+                                                            })
+                                                            .collect::<Vec<_>>()
+                                                    }
+                                                </Combobox>
+                                            </Field>
+                                            <div style="margin-top: 8px">
+                                                <button on:click=submit_angajat>"Submit"</button>
+                                            </div>
+                                        </FieldContextProvider>
+                                    }
 }
 
 #[component]
@@ -841,46 +939,58 @@ pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_su
     };
     let banci = OnceResource::new(get_banci());
 
-                                    view!{
+                                    view! {
                                         <FieldContextProvider>
-                                        <Field label="Nume" name="adresa">
-                                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                                    </Field>
-                                    <Field label="Adresa" name="adresa">
-                                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
-                                    </Field>
-                                    <Field label="Banca" name="combobox">
-                                        <Combobox value=input_banca rules=vec![ComboboxRule::required(true.into())] placeholder="Banca" clearable=true>
-                                        { 
-                                            // Map over the banca_data and return the combobox options directly
-                                            let banca_data = match banci.read().as_ref() {
-                                                Some(Ok(data)) => data.clone(),  // If it's Ok, clone the Vec<Banca>
-                                                Some(Err(e)) => {
-                                                    // Handle the error case, for example log the error or return a default value
-                                                    log::error!("Error fetching banci: {:?}", e);
-                                                    Vec::new() // Return an empty Vec<Banca> in case of error
-                                                }
-                                                None => {
-                                                    // Handle the None case, for example log the issue or return a default value
-                                                    log::error!("No data found for banci");
-                                                    Vec::new() // Return an empty Vec<Banca> in case of None
-                                                }
-                                            };
-                                            banca_data.iter().map(|banca| {
-                                                view! {
-                                                    <ComboboxOption value={banca.id.to_string()} text={banca.nume.clone()} />
-                                                }
-                                            }).collect::<Vec<_>>() // Collect the views into a Vec
-                                        }
-                                        </Combobox>
-                                    </Field>
-                                    <div style="margin-top: 8px">
-                                        <button on:click=submit_sucursala>
-                                            "Submit"
-                                        </button>
-                                    </div>
-            </FieldContextProvider>
-}
+                                            <Field label="Nume" name="adresa">
+                                                <Input
+                                                    value=input_nume
+                                                    rules=vec![InputRule::required(true.into())]
+                                                />
+                                            </Field>
+                                            <Field label="Adresa" name="adresa">
+                                                <Input
+                                                    value=input_adresa
+                                                    rules=vec![InputRule::required(true.into())]
+                                                />
+                                            </Field>
+                                            <Field label="Banca" name="combobox">
+                                                <Combobox
+                                                    value=input_banca
+                                                    rules=vec![ComboboxRule::required(true.into())]
+                                                    placeholder="Banca"
+                                                    clearable=true
+                                                >
+                                                    {
+                                                        let banca_data = match banci.read().as_ref() {
+                                                            Some(Ok(data)) => data.clone(),
+                                                            Some(Err(e)) => {
+                                                                log::error!("Error fetching banci: {:?}", e);
+                                                                Vec::new()
+                                                            }
+                                                            None => {
+                                                                log::error!("No data found for banci");
+                                                                Vec::new()
+                                                            }
+                                                        };
+                                                        banca_data
+                                                            .iter()
+                                                            .map(|banca| {
+                                                                view! {
+                                                                    <ComboboxOption
+                                                                        value=banca.id.to_string()
+                                                                        text=banca.nume.clone()
+                                                                    />
+                                                                }
+                                                            })
+                                                            .collect::<Vec<_>>()
+                                                    }
+                                                </Combobox>
+                                            </Field>
+                                            <div style="margin-top: 8px">
+                                                <button on:click=submit_sucursala>"Submit"</button>
+                                            </div>
+                                        </FieldContextProvider>
+                                    }
 }
 
 #[component]
@@ -897,21 +1007,24 @@ pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: im
         
     };
 
-                                    view!{
+                                    view! {
                                         <FieldContextProvider>
-                                        <Field label="Nume" name="nume">
-                                        <Input value=input_nume rules=vec![InputRule::required(true.into())] />
-                                    </Field>
-                                    <Field label="Adresa" name="adresa">
-                                        <Input value=input_adresa rules=vec![InputRule::required(true.into())] />
-                                    </Field>
-                                    <div style="margin-top: 8px">
-                                        <button on:click=submit_banca>
-                                            "Submit"
-                                        </button>
-                                    </div>
-            </FieldContextProvider>
-                                       
-}
+                                            <Field label="Nume" name="nume">
+                                                <Input
+                                                    value=input_nume
+                                                    rules=vec![InputRule::required(true.into())]
+                                                />
+                                            </Field>
+                                            <Field label="Adresa" name="adresa">
+                                                <Input
+                                                    value=input_adresa
+                                                    rules=vec![InputRule::required(true.into())]
+                                                />
+                                            </Field>
+                                            <div style="margin-top: 8px">
+                                                <button on:click=submit_banca>"Submit"</button>
+                                            </div>
+                                        </FieldContextProvider>
+                                    }
 }
          
