@@ -10,7 +10,7 @@ use thaw::*;
 use web_sys::MouseEvent;
 use leptos_router::hooks::use_navigate;
 
-
+/// Root shell component that provides the basic HTML structure
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
         <!DOCTYPE html>
@@ -29,6 +29,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
     }
 }
 
+/// Main App component that sets up routing and global providers
 #[component]
 pub fn App() -> impl IntoView {
 
@@ -53,7 +54,7 @@ pub fn App() -> impl IntoView {
     }
 }
 
-/// Renders the home page of your application.
+/// Simple home page component with a button to navigate to the main table view
 #[component]
 fn HomePage() -> impl IntoView {
     let navigate = use_navigate();
@@ -68,6 +69,7 @@ fn HomePage() -> impl IntoView {
     }
 }
 
+/// Enum representing which table is currently being displayed in the viewer
 #[derive(Clone, PartialEq)]
 pub enum TableState {
     Hidden,
@@ -76,6 +78,7 @@ pub enum TableState {
     Sucursale,
 }
 
+/// Enum representing which table is currently being edited
 #[derive(Clone, PartialEq, Debug)]
 pub enum TableStateEditor {
     Hidden,
@@ -84,6 +87,7 @@ pub enum TableStateEditor {
     Sucursale,
 }
 
+/// Helper function to display success toast notifications
 fn dispatch_toast(toaster: ToasterInjection, intent: ToastIntent) {
     toaster.dispatch_toast(move || view! {
         <Toast>
@@ -95,6 +99,7 @@ fn dispatch_toast(toaster: ToasterInjection, intent: ToastIntent) {
      }, ToastOptions::default().with_intent(intent));
 }
 
+/// Main page component containing the navigation sidebar and content area
 #[component]
 fn MainPage() -> impl IntoView {
     let (table_state, set_table_state) = signal(TableState::Hidden);
@@ -169,6 +174,8 @@ fn MainPage() -> impl IntoView {
         </Layout>
     }
 }
+
+/// Navigation component containing links to different views and external resources
 #[component]
 pub fn NavComponent(
     #[prop()] on_click_angajati: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,
@@ -223,6 +230,7 @@ pub fn NavComponent(
     }
 }
 
+/// Helper function to combine default CSS classes with optional additional classes
 pub fn with_default_class<T>(default_class: &str, class: T) -> String
 where
     T: Into<Option<String>>,
@@ -233,7 +241,7 @@ where
     }
 }
 
-
+/// Overlay component used for modal dialogs and forms
 #[component]
 #[allow(non_snake_case)]
 pub fn Overlay(#[prop(optional, into)] class: Signal<String>, children: Children) -> impl IntoView {
@@ -243,7 +251,7 @@ pub fn Overlay(#[prop(optional, into)] class: Signal<String>, children: Children
     view! { <div class=class>{children()}</div> }
 }
 
-
+/// Component for displaying data tables with CRUD operations
 #[component]
 pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
     let (delete_signal, set_delete) = signal(false);
@@ -649,6 +657,7 @@ pub fn Tables(#[prop(into)] table_state: Signal<TableState>) -> impl IntoView {
     }
 }
 
+/// Form component for creating and editing data
 #[component]
 pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl IntoView {
 
@@ -849,7 +858,7 @@ pub fn Editor(#[prop(into)] table_state_editor: Signal<TableStateEditor>)-> impl
     }
 }
 
-
+/// Component for editing employee (angajat) records
 #[component]
 pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
     let input_nume = RwSignal::new(String::from(""));
@@ -924,6 +933,7 @@ pub fn AngajatEditor(#[prop(into)] angajat_id: i32, #[prop()] on_feedback_succes
                                     }
 }
 
+/// Component for editing branch office (sucursala) records
 #[component]
 pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
     let input_nume = RwSignal::new(String::from(""));
@@ -994,6 +1004,7 @@ pub fn SucursalaEditor(#[prop(into)] sucursala_id: i32, #[prop()] on_feedback_su
                                     }
 }
 
+/// Component for editing bank (banca) records
 #[component]
 pub fn BancaEditor(#[prop(into)] banca_id: i32, #[prop()] on_feedback_succes: impl Fn(MouseEvent) + 'static + Clone + Copy + Send,)-> impl IntoView{
 

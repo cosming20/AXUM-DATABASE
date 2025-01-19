@@ -42,3 +42,9 @@ body {
     align-items: center;
 }
 
+.thaw-layout{
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    padding-left: 250px; // Match sider width to prevent overlap
+}
