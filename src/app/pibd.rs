@@ -8,6 +8,7 @@ use leptos_router::{
 };
 use thaw::*;
 use web_sys::MouseEvent;
+use leptos_router::hooks::use_navigate;
 
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -55,8 +56,16 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    
-    view! { <h1>"Welcome to Leptos!"</h1> }
+    let navigate = use_navigate();
+    let on_click = move |_| {
+        let _ = navigate("/table", Default::default());
+    };
+
+    view! {
+        <Button on_click=on_click>
+            "Go to Table"
+        </Button>
+    }
 }
 
 #[derive(Clone, PartialEq)]
