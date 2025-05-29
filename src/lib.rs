@@ -1,30 +1,45 @@
 pub mod api;
 pub mod app;
 pub mod db;
+pub mod auth;
 
-// use app::pibd::App;
-// #[macro_use]
+// Import all server functions to ensure they are registered
+#[cfg(feature = "ssr")]
+use api::{
+    auth::*,
+    users::*,
+    accounts::*,
+    transactions::*,
+    banks::*,
+    branches::*,
+};
+
+#[cfg(feature = "ssr")]
 extern crate diesel;
+#[cfg(feature = "ssr")]
 extern crate dotenv;
-// pub mod schema;
-// pub mod models;
-use diesel::mysql::MysqlConnection;
+
+#[cfg(feature = "ssr")]
+use diesel::pg::PgConnection;
+#[cfg(feature = "ssr")]
 use diesel::prelude::*;
+#[cfg(feature = "ssr")]
 use dotenv::dotenv;
+#[cfg(feature = "ssr")]
 use std::env;
 
-pub fn establish_connection() -> MysqlConnection {
+#[cfg(feature = "ssr")]
+pub fn establish_connection() -> PgConnection {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    MysqlConnection::establish(&database_url)
+    PgConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
 }
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
-    // use crate::pibd::src::app::*;
-    use app::pibd::*;
+    use app::bank_app::*;
     console_error_panic_hook::set_once();
     leptos::mount::hydrate_body(App);
 }

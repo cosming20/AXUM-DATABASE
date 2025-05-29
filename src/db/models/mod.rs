@@ -1,7 +1,11 @@
-pub mod angajati;
-pub mod banca;
-pub mod sucursala;
+pub mod users;
+pub mod banks;
+pub mod branches;
+pub mod accounts;
+pub mod transactions;
 
-pub use angajati::*;
-pub use banca::*;
-pub use sucursala::*;
+pub use users::*;
+pub use banks::*;
+pub use branches::*;
+pub use accounts::*;
+pub use transactions::*;

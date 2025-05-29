@@ -1,5 +1,5 @@
 [package]
-name = "pibd"
+name = "bank-app"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,8 +7,8 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-leptos = { version = "0.7.0", features = ["nightly"] }
-leptos_router = { version = "0.7.0", features = ["nightly"] }
+leptos = { version = "0.7.0" }
+leptos_router = { version = "0.7.0" }
 axum = { version = "0.7", optional = true }
 console_error_panic_hook = "0.1"
 leptos_axum = { version = "0.7.0", optional = true }
@@ -18,13 +18,13 @@ tower = { version = "0.4", optional = true }
 tower-http = { version = "0.5", features = ["fs"], optional = true }
 wasm-bindgen = "=0.2.100"
 serde = { version = "1.0.147", features = ["derive"] }
-diesel = { version = "2.2.6", features = ["mysql"] }
+diesel = { version = "2.2.6", features = ["postgres", "uuid", "chrono", "numeric"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 diesel-async = "0.5.2"
 dotenv = "0.15"
 log = "0.4"
 thiserror = { version = "1.0.37" }
-thaw = { version = "0.4.0", features = ["nightly"] }
+thaw = { version = "0.4.0" }
 icondata = { version = "0.5.0", default-features = false, features = [
     "ant-design-icons",
     "box-icons",
@@ -32,6 +32,14 @@ icondata = { version = "0.5.0", default-features = false, features = [
 ] }
 web-sys = "0.3"
 leptos-use = "0.15.3"
+gloo-timers = "0.3"
+# Banking-specific dependencies
+bcrypt = { version = "0.15", optional = true }
+jsonwebtoken = { version = "9.2", optional = true }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+rust_decimal = { version = "1.33", features = ["serde"] }
+regex = "1.10"
+bigdecimal = "0.4"
 
 [dev-dependencies]
 leptosfmt = "0.1.13"
@@ -50,6 +58,8 @@ ssr = [
     "leptos_router/ssr",
     "thaw/ssr",
     "leptos-use/ssr",
+    "dep:bcrypt",
+    "dep:jsonwebtoken",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

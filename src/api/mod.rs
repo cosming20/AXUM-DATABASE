@@ -1,10 +1,16 @@
-pub mod angajati;
-pub mod banca;
-pub mod sucursala;
+pub mod auth;
+pub mod users;
+pub mod accounts;
+pub mod transactions;
+pub mod banks;
+pub mod branches;
 
-pub use angajati::*;
-pub use banca::*;
-pub use sucursala::*;
+pub use auth::*;
+pub use users::*;
+pub use accounts::*;
+pub use transactions::*;
+pub use banks::*;
+pub use branches::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -15,4 +21,8 @@ pub enum ClientError {
     NoPrimaryEmail,
     NotVerified,
     NoPermission,
+    InvalidCredentials,
+    InsufficientFunds,
+    AccountNotFound,
+    TransactionFailed,
 }

@@ -4,8 +4,8 @@ async fn main() {
     use axum::Router;
     use leptos::logging::log;
     use leptos::prelude::*;
-    use leptos_axum::{generate_route_list, LeptosRoutes};
-    use pibd::app::pibd::{shell, App};
+    use leptos_axum::{generate_route_list, LeptosRoutes, handle_server_fns};
+    use bank_app::app::bank_app::{shell, App};
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -14,6 +14,7 @@ async fn main() {
     let routes = generate_route_list(App);
 
     let app = Router::new()
+        .route("/api/*fn_name", axum::routing::post(handle_server_fns))
         .leptos_routes(&leptos_options, routes, {
             let leptos_options = leptos_options.clone();
             move || shell(leptos_options.clone())
