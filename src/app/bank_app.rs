@@ -120,58 +120,129 @@ fn LoginPage() -> impl IntoView {
     };
 
     view! {
-        <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <Card class="w-full max-w-md">
-                <CardHeader>
-                    <div class="text-center">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">"SecureBank"</h1>
-                        <p class="text-gray-600">"Welcome back! Please sign in to your account."</p>
-                    </div>
-                </CardHeader>
-                <div class="space-y-4 p-6">
-                    {move || error.get().map(|err| view! {
-                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                            {err}
+        <div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; overflow: hidden;">
+            // Smaller, subtle background elements
+            <div style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; filter: blur(20px);" class="animate-blob"></div>
+                <div style="position: absolute; bottom: -30px; left: -30px; width: 100px; height: 100px; background: rgba(255, 255, 255, 0.08); border-radius: 50%; filter: blur(25px);" class="animate-blob animation-delay-2000"></div>
+                <div style="position: absolute; top: 50%; left: 20px; width: 80px; height: 80px; background: rgba(255, 255, 255, 0.06); border-radius: 50%; filter: blur(30px);" class="animate-blob animation-delay-4000"></div>
+            </div>
+            
+            <div style="position: relative; z-index: 10; width: 100%; max-width: 400px;">
+                <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; padding: 2rem; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; margin-bottom: 1rem;">
+                            <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
                         </div>
-                    })}
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">"Email"</label>
-                        <Input
-                            placeholder="Enter your email"
-                            value=(email, set_email)
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">"Password"</label>
-                        <Input
-                            input_type=InputType::Password
-                            placeholder="Enter your password"
-                            value=(password, set_password)
-                        />
-                    </div>
-                    <Button
-                        class="w-full"
-                        loading=loading
-                        on_click=on_login
-                    >
-                        "Sign In"
-                    </Button>
-                    
-                    <div class="text-sm text-gray-600 text-center">
-                        <p>"Test credentials:"</p>
-                        <p>"Email: test@securebank.test"</p>
-                        <p>"Password: password123"</p>
+                        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.025em;">"SecureBank"</h1>
+                        <p style="color: rgba(255, 255, 255, 0.9); font-size: 1rem;">"Welcome back! Please sign in to your account."</p>
                     </div>
                     
-                    <div class="text-center">
-                        <p class="text-sm text-gray-600">
-                            "Don't have an account? "
-                            <a href="/signup" class="text-blue-600 hover:text-blue-500 font-medium">"Sign up"</a>
-                        </p>
+                    <div style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                        {move || error.get().map(|err| view! {
+                            <div style="background: #fef2f2; border-left: 4px solid #ef4444; color: #dc2626; padding: 1rem; border-radius: 0.5rem;" class="animate-shake">
+                                <div style="display: flex; align-items: center;">
+                                    <svg style="width: 20px; height: 20px; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span style="font-weight: 500;">{err}</span>
+                                </div>
+                            </div>
+                        })}
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Email Address"</label>
+                                <div style="position: relative;">
+                                    <div style="position: absolute; inset-y: 0; left: 0; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none; z-index: 1;">
+                                    </div>
+                                    <div style="position: relative;">
+                                        <Input
+                                            class="custom-input"
+                                            placeholder="Enter your email address"
+                                            value=(email, set_email)
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Password"</label>
+                                <div style="position: relative;">
+                                    <div style="position: absolute; inset-y: 0; left: 0; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none; z-index: 1;">
+                                    </div>
+                                    <div style="position: relative;">
+                                        <Input
+                                            class="custom-input"
+                                            input_type=InputType::Password
+                                            placeholder="Enter your password"
+                                            value=(password, set_password)
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="width: 100%; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);">
+                            <Button
+                                class="custom-button"
+                                loading=loading
+                                on_click=on_login
+                            >
+                                {move || if loading.get() {
+                                    view! {
+                                        <span style="display: flex; align-items: center; justify-content: center;">
+                                            "Signing In..."
+                                        </span>
+                                    }.into_any()
+                                } else {
+                                    view! {
+                                        <span style="display: flex; align-items: center; justify-content: center;">
+                                            <svg style="width: 20px; height: 20px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                            </svg>
+                                            "Sign In"
+                                        </span>
+                                    }.into_any()
+                                }}
+                            </Button>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%); border: 1px solid #bfdbfe; color: #1e40af; padding: 1rem; border-radius: 0.75rem;">
+                            <div style="display: flex; align-items: flex-start;">
+                                <svg style="width: 20px; height: 20px; color: #3b82f6; margin-top: 0.125rem; margin-right: 0.75rem; flex-shrink: 0;" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div style="font-size: 0.875rem;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem;">"Demo Credentials:"</p>
+                                    <p style="color: #1d4ed8; margin: 0;">"Email: test@securebank.test"</p>
+                                    <p style="color: #1d4ed8; margin: 0;">"Password: password123"</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; position: relative;">
+                            <div style="position: absolute; inset: 0; display: flex; align-items: center;">
+                                <div style="width: 100%; border-top: 1px solid #e5e7eb;"></div>
+                            </div>
+                            <div style="position: relative; display: flex; justify-content: center; font-size: 0.875rem;">
+                                <span style="padding: 0 1rem; background: rgba(255, 255, 255, 0.95); color: #6b7280;">"New to SecureBank?"</span>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <a href="/signup" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; max-width: 100%; padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 0.75rem; color: #374151; background: white; text-decoration: none; transition: all 0.2s; font-weight: 500; font-size: 1rem; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <svg style="width: 20px; height: 20px; margin-right: 0.5rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                </svg>
+                                "Create New Account"
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </Card>
+            </div>
         </div>
     }
 }
@@ -254,105 +325,224 @@ fn SignupPage() -> impl IntoView {
     };
 
     view! {
-        <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <Card class="w-full max-w-md">
-                <CardHeader>
-                    <div class="text-center">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">"SecureBank"</h1>
-                        <p class="text-gray-600">"Create your account to get started."</p>
+        <div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; overflow: hidden;">
+            // Smaller background elements for signup
+            <div style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; filter: blur(20px);" class="animate-blob"></div>
+                <div style="position: absolute; bottom: -30px; left: -30px; width: 100px; height: 100px; background: rgba(255, 255, 255, 0.08); border-radius: 50%; filter: blur(25px);" class="animate-blob animation-delay-2000"></div>
+                <div style="position: absolute; top: 50%; left: 20px; width: 80px; height: 80px; background: rgba(255, 255, 255, 0.06); border-radius: 50%; filter: blur(30px);" class="animate-blob animation-delay-4000"></div>
+            </div>
+            
+            <div style="position: relative; z-index: 10; width: 100%; max-width: 500px;">
+                <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: white; padding: 2rem; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; margin-bottom: 1rem;">
+                            <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                        </div>
+                        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.025em;">"SecureBank"</h1>
+                        <p style="color: rgba(255, 255, 255, 0.9); font-size: 1rem;">"Create your account to get started."</p>
                     </div>
-                </CardHeader>
-                <div class="space-y-4 p-6">
-                    {move || {
-                        if success.get() {
-                            view! {
-                                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-center">
-                                    <p class="font-medium">"Account created successfully!"</p>
-                                    <p class="text-sm">"Redirecting to login..."</p>
-                                </div>
-                            }.into_any()
-                        } else {
-                            view! {
-                                <div>
-                                    {move || error.get().map(|err| view! {
-                                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                                            {err}
+                    
+                    <div style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                        {move || {
+                            if success.get() {
+                                view! {
+                                    <div style="text-align: center; padding: 2rem 0;">
+                                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: #dcfce7; border-radius: 50%; margin-bottom: 1rem;">
+                                            <svg style="width: 40px; height: 40px; color: #16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
                                         </div>
-                                    })}
-                                    
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">"First Name *"</label>
-                                            <Input
-                                                placeholder="Enter your first name"
-                                                value=(first_name, set_first_name)
-                                            />
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">"Last Name *"</label>
-                                            <Input
-                                                placeholder="Enter your last name"
-                                                value=(last_name, set_last_name)
-                                            />
+                                        <h3 style="font-size: 1.5rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem;">"Account Created Successfully!"</h3>
+                                        <p style="color: #6b7280; margin-bottom: 1rem; font-size: 1rem;">"Welcome to SecureBank! Redirecting you to sign in..."</p>
+                                        <div style="display: flex; align-items: center; justify-content: center;">
+                                            <svg style="width: 24px; height: 24px; color: #7c3aed;" class="animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle style="opacity: 0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path style="opacity: 0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
                                         </div>
                                     </div>
-                                    
+                                }.into_any()
+                            } else {
+                                view! {
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">"Email *"</label>
-                                        <Input
-                                            input_type=InputType::Email
-                                            placeholder="Enter your email"
-                                            value=(email, set_email)
-                                        />
+                                        {move || error.get().map(|err| view! {
+                                            <div style="background: #fef2f2; border-left: 4px solid #ef4444; color: #dc2626; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;" class="animate-shake">
+                                                <div style="display: flex; align-items: center;">
+                                                    <svg style="width: 20px; height: 20px; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <span style="font-weight: 500;">{err}</span>
+                                                </div>
+                                            </div>
+                                        })}
+                                        
+                                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                                            // Personal Information
+                                            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #d1d5db;">
+                                                <h3 style="font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                                                    <svg style="width: 20px; height: 20px; margin-right: 0.5rem; color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                    </svg>
+                                                    "Personal Information"
+                                                </h3>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"First Name *"</label>
+                                                        <Input
+                                                            class="custom-input"
+                                                            placeholder="Enter your first name"
+                                                            value=(first_name, set_first_name)
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Last Name *"</label>
+                                                        <Input
+                                                            class="custom-input"
+                                                            placeholder="Enter your last name"
+                                                            value=(last_name, set_last_name)
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            // Contact Information
+                                            <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #bfdbfe;">
+                                                <h3 style="font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                                                    <svg style="width: 20px; height: 20px; margin-right: 0.5rem; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    "Contact Information"
+                                                </h3>
+                                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Email Address *"</label>
+                                                        <div style="position: relative;">
+                                                            <div style="position: absolute; inset-y: 0; left: 0; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none; z-index: 1;">
+                                                            </div>
+                                                            <div style="position: relative;">
+                                                                <Input
+                                                                    class="custom-input"
+                                                                    input_type=InputType::Email
+                                                                    placeholder="Enter your email address"
+                                                                    value=(email, set_email)
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Phone Number"</label>
+                                                        <div style="position: relative;">
+                                                            <div style="position: absolute; inset-y: 0; left: 0; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none; z-index: 1;">
+                                                            </div>
+                                                            <div style="position: relative;">
+                                                                <Input
+                                                                    class="custom-input"
+                                                                    input_type=InputType::Tel
+                                                                    placeholder="Enter your phone number"
+                                                                    value=(phone, set_phone)
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            // Security Section
+                                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #f59e0b;">
+                                                <h3 style="font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 1rem; display: flex; align-items: center;">
+                                                    <svg style="width: 20px; height: 20px; margin-right: 0.5rem; color: #f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                    </svg>
+                                                    "Security"
+                                                </h3>
+                                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Password *"</label>
+                                                        <div style="position: relative;">
+                                                            <div style="position: absolute; inset-y: 0; left: 0; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none; z-index: 1;">
+                                                                
+                                                            </div>
+                                                            <div style="position: relative;">
+                                                                <Input
+                                                                    class="custom-input"
+                                                                    input_type=InputType::Password
+                                                                    placeholder="Create a secure password"
+                                                                    value=(password, set_password)
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">"Confirm Password *"</label>
+                                                        <div style="position: relative;">
+                                                            <div style="position: absolute; inset-y: 0; left: 0; padding-left: 0.75rem; display: flex; align-items: center; pointer-events: none; z-index: 1;">
+                                                               
+                                                            </div>
+                                                            <div style="position: relative;">
+                                                                <Input
+                                                                    class="custom-input"
+                                                                    input_type=InputType::Password
+                                                                    placeholder="Confirm your password"
+                                                                    value=(confirm_password, set_confirm_password)
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="width: 100%; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.3);">
+                                            <Button
+                                                class="custom-button"
+                                                loading=loading
+                                                on_click=on_signup
+                                            >
+                                                {move || if loading.get() {
+                                                    view! {
+                                                        <span style="display: flex; align-items: center; justify-content: center;">
+                                                            "Creating Account..."
+                                                        </span>
+                                                    }.into_any()
+                                                } else {
+                                                    view! {
+                                                        <span style="display: flex; align-items: center; justify-content: center;">
+                                                            <svg style="width: 20px; height: 20px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                                            </svg>
+                                                            "Create Account"
+                                                        </span>
+                                                    }.into_any()
+                                                }}
+                                            </Button>
+                                        </div>
+                                        
+                                        <div style="text-align: center; position: relative;">
+                                            <div style="position: absolute; inset: 0; display: flex; align-items: center;">
+                                                <div style="width: 100%; border-top: 1px solid #e5e7eb;"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="text-align: center;">
+                                            <a href="/" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; max-width: 100%; padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 0.75rem; color: #374151; background: white; text-decoration: none; transition: all 0.2s; font-weight: 500; font-size: 1rem; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                <svg style="width: 20px; height: 20px; margin-right: 0.5rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                                </svg>
+                                                "Sign In Instead"
+                                            </a>
+                                        </div>
                                     </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">"Phone"</label>
-                                        <Input
-                                            input_type=InputType::Tel
-                                            placeholder="Enter your phone number"
-                                            value=(phone, set_phone)
-                                        />
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">"Password *"</label>
-                                        <Input
-                                            input_type=InputType::Password
-                                            placeholder="Enter your password"
-                                            value=(password, set_password)
-                                        />
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">"Confirm Password *"</label>
-                                        <Input
-                                            input_type=InputType::Password
-                                            placeholder="Confirm your password"
-                                            value=(confirm_password, set_confirm_password)
-                                        />
-                                    </div>
-                                    
-                                    <Button
-                                        class="w-full"
-                                        loading=loading
-                                        on_click=on_signup
-                                    >
-                                        "Create Account"
-                                    </Button>
-                                    
-                                    <div class="text-center">
-                                        <p class="text-sm text-gray-600">
-                                            "Already have an account? "
-                                            <a href="/" class="text-blue-600 hover:text-blue-500 font-medium">"Sign in"</a>
-                                        </p>
-                                    </div>
-                                </div>
-                            }.into_any()
-                        }
-                    }}
+                                }.into_any()
+                            }
+                        }}
+                    </div>
                 </div>
-            </Card>
+            </div>
         </div>
     }
 }
