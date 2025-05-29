@@ -165,7 +165,7 @@ pub async fn create_transfer(request: TransferRequest) -> Result<Transaction, Se
 }
 
 #[server(CreateDeposit, "/api")]
-pub async fn create_deposit(account_id: i32, amount: f64, description: Option<String>) -> Result<Transaction, ServerFnError> {
+pub async fn create_deposit(account_id: i32, amount: Decimal) -> Result<(), ServerFnError> {
     #[cfg(feature = "ssr")]
     {
         use crate::db::models::transactions::SqlTransaction;
@@ -175,36 +175,29 @@ pub async fn create_deposit(account_id: i32, amount: f64, description: Option<St
         
         let mut conn = establish_connection();
         
+        // Convert Decimal to f64 for database operations
+        let amount_f64 = amount.to_string().parse::<f64>().unwrap_or(0.0);
+        
         conn.transaction::<_, diesel::result::Error, _>(|conn| {
-            // Get current balance
+            // Get current account to verify it exists and get current balance
             let account = SqlAccount::find_by_id(conn, account_id)?;
-            let current_balance: f64 = account.balance.to_string().parse().unwrap_or(0.0);
+            
+            // Create deposit transaction
+            let _transaction = SqlTransaction::create_deposit(
+                conn,
+                account_id, // To account
+                amount_f64,
+                Some("Card deposit".to_string()),
+            )?;
             
             // Update account balance
-            SqlAccount::update_balance(conn, account_id, current_balance + amount)?;
+            let new_balance = account.balance.to_string().parse::<f64>().unwrap_or(0.0) + amount_f64;
+            SqlAccount::update_balance(conn, account_id, new_balance)?;
             
-            // Create transaction record
-            let transaction = SqlTransaction::create_deposit(conn, account_id, amount, description)?;
-            
-            Ok(transaction)
-        })
-        .map_err(|e| ServerFnError::new(format!("Deposit failed: {}", e)))
-        .map(|txn| Transaction {
-            id: txn.id,
-            uuid: txn.uuid,
-            from_account_id: txn.from_account_id,
-            to_account_id: txn.to_account_id,
-            amount: Decimal::from_str(&txn.amount.to_string()).unwrap_or_default(),
-            currency: txn.currency,
-            transaction_type: crate::app::models::TransactionType::from(txn.transaction_type),
-            description: txn.description,
-            status: crate::app::models::TransactionStatus::from(txn.status),
-            reference_number: txn.reference_number,
-            from_account_number: None, // TODO: Join with accounts table to get account numbers
-            to_account_number: None, // TODO: Join with accounts table to get account numbers
-            created_at: chrono::DateTime::from_naive_utc_and_offset(txn.created_at, chrono::Utc),
-            updated_at: chrono::DateTime::from_naive_utc_and_offset(txn.updated_at, chrono::Utc),
-        })
+            Ok(())
+        }).map_err(|e| ServerFnError::new(format!("Failed to create deposit: {}", e)))?;
+        
+        Ok(())
     }
     
     #[cfg(not(feature = "ssr"))]

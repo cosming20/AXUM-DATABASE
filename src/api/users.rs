@@ -28,6 +28,7 @@ pub async fn create_user(request: RegisterRequest) -> Result<User, ServerFnError
     #[cfg(feature = "ssr")]
     {
         use crate::db::models::users::SqlUser;
+        use crate::db::models::accounts::SqlAccount;
         use crate::establish_connection;
         use diesel::prelude::*;
         
@@ -40,6 +41,18 @@ pub async fn create_user(request: RegisterRequest) -> Result<User, ServerFnError
         
         let user = SqlUser::create_user(&mut conn, request)
             .map_err(|e| ServerFnError::new(format!("Failed to create user: {}", e)))?;
+        
+        // Automatically create a default checking account for the new user
+        let _account = SqlAccount::create_account(
+            &mut conn,
+            user.id,
+            1, // Default to main branch (branch_id = 1)
+            "checking".to_string(), // Default account type
+            Some(0.0), // Initial balance of $0.00
+        ).map_err(|e| {
+            leptos::logging::log!("Warning: Failed to create default account for user {}: {}", user.id, e);
+            // Don't fail user creation if account creation fails
+        });
         
         Ok(user.to_app_model())
     }
